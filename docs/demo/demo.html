@@ -68,22 +68,36 @@
   .ripple { position: absolute; border-radius: 50%; border: 2px solid #d97706; z-index: 9; }
   .fade { position: absolute; inset: 0; background: #0f172a; z-index: 20; pointer-events: none; }
   .caption { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; display: flex; align-items: center; justify-content: center; color: #57534e; font-size: 13px; z-index: 3; }
+
+  /* ---------- v2: title ring ---------- */
+  .ring { position: relative; width: 1280px; height: 420px; }
+  .ring svg.lines { position: absolute; inset: 0; }
+  .node { position: absolute; width: 112px; height: 40px; margin: -20px 0 0 -56px; border-radius: 999px; background: #1e293b; border: 1.5px solid #475569; color: #e2e8f0; font-size: 15px; font-weight: 650; display: flex; align-items: center; justify-content: center; gap: 7px; }
+  .node i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .core { position: absolute; left: 640px; top: 210px; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 50%; background: #f59e0b; color: #0f172a; font-weight: 800; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 70px #f59e0b77; }
+  .core small { display: block; font-size: 12px; font-weight: 600; text-align: center; }
+  /* ---------- v2: panel ---------- */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 14px 14px; border-top: 1px solid #f0ece4; background: #fcfbf8; }
+  .mini { border: 1px solid #e7e3da; background: #fff; border-radius: 10px; padding: 10px 12px; min-height: 104px; font-size: 13.5px; line-height: 1.5; color: #1c1917; }
+  .mini .who { display: flex; align-items: center; gap: 7px; font-weight: 700; font-size: 13px; margin-bottom: 4px; color: #292524; }
+  .mini .who i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .mini .who .t { margin-left: auto; font-weight: 500; color: #78716c; font-size: 12px; }
+  .mini .wait { color: #a8a29e; font-size: 13px; display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; width: 1000px; margin-top: 26px; }
+  .chipx { padding: 8px 15px; border-radius: 999px; background: #1e293b; border: 1px solid #334155; color: #e2e8f0; font-size: 16px; font-weight: 600; }
 </style>
 </head>
 <body>
 
 <!-- ============ SCENE 1: TITLE ============ -->
 <div class="scene card-bg" id="title">
-  <div class="center">
-    <div class="orbs">
-      <div class="beam" id="beam"></div>
-      <div class="pulse" id="p1"></div><div class="pulse" id="p2"></div>
-      <div class="orb c" id="oc">Claude</div>
-      <div class="hub" id="hub">MCP<small>bridge</small></div>
-      <div class="orb g" id="og">ChatGPT</div>
+  <div class="center" style="justify-content:flex-start;padding-top:28px">
+    <div class="ring" id="ring">
+      <svg class="lines" id="lines" width="1280" height="420"></svg>
+      <div class="core" id="core"><div>Claude<small>via MCP bridge</small></div></div>
     </div>
-    <h1 class="big" id="t1">ChatGPT MCP Bridge</h1>
-    <p class="sub" id="t2">Give Claude a phone line to ChatGPT.</p>
+    <h1 class="big" id="t1" style="margin-top:6px">ChatGPT MCP Bridge</h1>
+    <p class="sub" id="t2">Connect Claude to ChatGPT, and to every other major AI.</p>
   </div>
   <div class="fade" id="f1"></div>
 </div>
@@ -94,7 +108,7 @@
     <div class="bar">
       <div class="dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
       <div class="title">API key safety check</div>
-      <div class="chip"><i></i>chatgpt · 12 tools</div>
+      <div class="chip"><i></i>ai bridge · 15 tools</div>
     </div>
     <div class="feed" id="feed"></div>
     <div class="composer"><div class="txt" id="comp"></div><div class="send" id="send">↑</div></div>
@@ -111,16 +125,33 @@
   <div class="fade" id="f2"></div>
 </div>
 
-<!-- ============ SCENE 3: END ============ -->
+<!-- ============ SCENE 3: PANEL ============ -->
+<div class="scene" id="panel" style="background:#e8e4dc">
+  <div class="window">
+    <div class="bar">
+      <div class="dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
+      <div class="title">Bakery idea</div>
+      <div class="chip"><i></i>ai bridge · 4 AIs on</div>
+    </div>
+    <div class="feed" id="pfeed"></div>
+    <div class="composer"><div class="txt" id="pcomp"></div><div class="send" id="psend">↑</div></div>
+  </div>
+  <div class="caption">Illustrative session. Your replies will vary with the models.</div>
+  <svg class="cursor" id="pcur" viewBox="0 0 24 24"><path d="M4 2 L4 19 L8.5 15 L11.5 22 L14.5 20.7 L11.6 14 L18 14 Z" fill="#111" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  <div class="ripple" id="prip"></div>
+  <div class="fade" id="f4"></div>
+</div>
+
+<!-- ============ SCENE 4: END ============ -->
 <div class="scene card-bg" id="end">
   <div class="center">
-    <h1 class="big" id="e1" style="font-size:54px">Second opinions in one sentence.</h1>
-    <p class="sub" id="e2">12 tools · Claude Desktop · Claude Code · claude.ai</p>
+    <h1 class="big" id="e1" style="font-size:54px">Every major AI. One bridge.</h1>
+    <div class="chips" id="chips"></div>
     <div class="term" id="term"></div>
     <div class="url" id="e3">github.com/myrahossain36-svg/chatgpt-mcp-bridge</div>
     <div class="star" id="e4">★ Star it on GitHub</div>
   </div>
-  <div class="note">Open source · MIT licence · Not affiliated with OpenAI or Anthropic</div>
+  <div class="note">Open source · MIT licence · Not affiliated with OpenAI, Anthropic, Google, xAI or any other provider</div>
   <div class="fade" id="f3"></div>
 </div>
 
@@ -147,34 +178,55 @@ const USER = "Is it OK to keep our OpenAI API key in a .env file in the repo? Ge
 const CLAUDE1 = "Keeping the key in a <b>.env</b> file is fine, but that file must never be committed. Add <b>.env</b> to <b>.gitignore</b>, commit a <b>.env.example</b> with placeholders instead, and load the real key from a secrets manager in production. Let me check this with ChatGPT.";
 const GPT = "<b>Verdict: Agree.</b> One addition: if the key was <i>ever</i> committed, treat it as leaked and rotate it now. Deleting the file does not remove it from git history. Also turn on GitHub secret scanning and push protection.";
 const CLAUDE2 = "Both models agree on the core advice, and ChatGPT caught a point I left out. Final checklist: <b>1.</b> If the key was ever committed, rotate it today. <b>2.</b> Add <b>.env</b> to <b>.gitignore</b> and share a <b>.env.example</b>. <b>3.</b> Enable secret scanning so it cannot happen again.";
-const INSTALL = "claude mcp add chatgpt -e OPENAI_API_KEY=sk-... -- npx -y github:myrahossain36-svg/chatgpt-mcp-bridge";
+const INSTALL = "claude mcp add ai-bridge -e OPENAI_API_KEY=sk-... -e GEMINI_API_KEY=... -- npx -y github:myrahossain36-svg/chatgpt-mcp-bridge";
+const RING = [["ChatGPT","#10b981"],["Gemini","#60a5fa"],["Grok","#e5e7eb"],["DeepSeek","#6366f1"],["Mistral","#f97316"],["Llama","#3b82f6"],["Perplexity","#22d3ee"],["Kimi","#a78bfa"],["Qwen","#c084fc"],["Cohere","#f472b6"]];
+const ALL = ["ChatGPT","Claude","Gemini","Grok","DeepSeek","Mistral","Llama","Perplexity","Kimi","Qwen","Cohere","Groq","OpenRouter","Ollama","LM Studio"];
+const PUSER = "Run an AI panel: should a small bakery offer a monthly bread subscription?";
+const PANEL = [
+  { who: "ChatGPT", col: "#10b981", done: 7.8, ms: "2.6s", text: "Yes, as a pilot. Subscriptions smooth out demand and cut waste. Start with 30 to 50 members and one fixed collection day." },
+  { who: "Gemini", col: "#3b82f6", done: 9.2, ms: "4.0s", text: "Worth testing. Price each loaf a little below the walk-in price, and add a monthly special so members stay." },
+  { who: "Grok", col: "#57534e", done: 7.0, ms: "1.8s", text: "Only if you can bake the extra loaves reliably. Missed orders will cost more goodwill than the revenue is worth." },
+  { who: "DeepSeek", col: "#6366f1", done: 8.5, ms: "3.3s", text: "Yes. Paying upfront improves cash flow and forecasting. Track cancellations monthly and cap numbers at first." },
+];
+const PSUM = "All four favour a <b>small pilot</b>. ChatGPT, Gemini and DeepSeek point to steadier demand and upfront cash; Grok's warning about baking capacity is the main risk. Suggested plan: <b>cap at 40 members</b>, one collection day, and review cancellations after 8 weeks.";
 
 // ---------- scene durations (seconds) ----------
-window.SCENES = { title: 3.5, chat: 27, end: 6 };
+window.SCENES = { title: 4.5, chat: 27, panel: 21, end: 7.5 };
 
-function show(id) { for (const s of ["title", "chat", "end"]) $(s).style.display = s === id ? "block" : "none"; }
+function show(id) { for (const s of ["title", "chat", "panel", "end"]) $(s).style.display = s === id ? "block" : "none"; }
 
 function renderTitle(t) {
   show("title");
-  const a = easeOut(prog(t, 0.1, 0.8));
-  $("oc").style.transform = `translateX(${(1 - a) * -80}px) scale(${0.6 + 0.4 * back(prog(t, 0.1, 0.8))})`;
-  $("og").style.transform = `translateX(${(1 - a) * 80}px) scale(${0.6 + 0.4 * back(prog(t, 0.25, 0.8))})`;
-  $("oc").style.opacity = $("og").style.opacity = a;
-  const b = easeInOut(prog(t, 0.7, 0.8));
-  $("beam").style.width = `${460 * b}px`;
-  $("hub").style.opacity = easeOut(prog(t, 1.1, 0.4));
-  $("hub").style.transform = `scale(${0.7 + 0.3 * back(prog(t, 1.1, 0.5))})`;
-  const cyc = (t - 1.5) / 1.1;
-  for (const [id, off] of [["p1", 0], ["p2", 0.5]]) {
-    const x = ((cyc + off) % 1 + 1) % 1;
-    $(id).style.left = `${150 + 442 * x}px`;
-    $(id).style.opacity = t > 1.5 ? Math.sin(x * Math.PI) : 0;
-  }
-  $("t1").style.opacity = easeOut(prog(t, 1.2, 0.6));
-  $("t1").style.transform = `translateY(${(1 - easeOut(prog(t, 1.2, 0.6))) * 24}px)`;
-  $("t2").style.opacity = easeOut(prog(t, 1.6, 0.6));
-  $("t2").style.transform = `translateY(${(1 - easeOut(prog(t, 1.6, 0.6))) * 18}px)`;
-  $("f1").style.opacity = 1 - prog(t, 0, 0.4) + prog(t, 3.1, 0.4);
+  const cx = 640, cy = 210, rx = 420, ry = 165;
+  const pts = RING.map((_, i) => { const ang = -Math.PI / 2 + (i / RING.length) * Math.PI * 2; return [cx + rx * Math.cos(ang), cy + ry * Math.sin(ang)]; });
+  // lines draw in, then pulses travel along them
+  let svg = "";
+  pts.forEach(([x, y], i) => {
+    const d = easeInOut(prog(t, 0.5 + i * 0.08, 0.6));
+    const ex = cx + (x - cx) * d, ey = cy + (y - cy) * d;
+    svg += `<line x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}" stroke="${RING[i][1]}" stroke-opacity="0.55" stroke-width="2.5"/>`;
+    if (t > 1.6) {
+      const ph = (((t - 1.6) * 0.7 + i * 0.13) % 1);
+      const px = cx + (x - cx) * ph, py = cy + (y - cy) * ph;
+      svg += `<circle cx="${px}" cy="${py}" r="4" fill="#fff" opacity="${Math.sin(ph * Math.PI)}"/>`;
+    }
+  });
+  $("lines").innerHTML = svg;
+  let nodes = "";
+  pts.forEach(([x, y], i) => {
+    const a = back(prog(t, 0.9 + i * 0.08, 0.5));
+    nodes += `<div class="node" style="left:${x}px;top:${y}px;opacity:${clamp(a)};transform:scale(${0.4 + 0.6 * a})"><i style="background:${RING[i][1]}"></i>${RING[i][0]}</div>`;
+  });
+  $("ring").querySelectorAll(".node").forEach((n) => n.remove());
+  $("ring").insertAdjacentHTML("beforeend", nodes);
+  const c = back(prog(t, 0.1, 0.6));
+  $("core").style.transform = `scale(${0.5 + 0.5 * c})`;
+  $("core").style.opacity = clamp(c);
+  $("t1").style.opacity = easeOut(prog(t, 1.8, 0.6));
+  $("t1").style.transform = `translateY(${(1 - easeOut(prog(t, 1.8, 0.6))) * 24}px)`;
+  $("t2").style.opacity = easeOut(prog(t, 2.2, 0.6));
+  $("t2").style.transform = `translateY(${(1 - easeOut(prog(t, 2.2, 0.6))) * 18}px)`;
+  $("f1").style.opacity = 1 - prog(t, 0, 0.4) + prog(t, window.SCENES.title - 0.4, 0.4);
 }
 
 // Chat timeline (seconds from scene start)
@@ -258,21 +310,62 @@ function renderChat(t) {
   $("f2").style.opacity = 1 - prog(t, 0, 0.5) + prog(t, window.SCENES.chat - 0.5, 0.5);
 }
 
+function renderPanel(t) {
+  show("panel");
+  const P = { type: 0.8, cps: 30, send: 3.9, intro: 4.4, tool: 5.2, sum: 12.0 };
+  if (t < P.send) {
+    const s2 = typed(PUSER, t, P.type, P.cps);
+    $("pcomp").innerHTML = s2 ? esc(s2) + (Math.floor(t * 2) % 2 ? "" : '<span class="caret" style="height:18px;width:2px;background:#1c1917"></span>') : '<span class="ph">Reply to Claude...</span>';
+  } else $("pcomp").innerHTML = '<span class="ph">Reply to Claude...</span>';
+  let html = "";
+  if (t >= P.send) html += block("user", esc(PUSER), P.send, t);
+  if (t >= P.intro) html += block("asst", `<div class="av">C</div><div class="body">${streamed("I'll put the question to ChatGPT, Gemini, Grok and DeepSeek at the same time.", t, P.intro + 0.3, 12)}</div>`, P.intro, t);
+  if (t >= P.tool) {
+    const allDone = t >= Math.max(...PANEL.map((p) => p.done)) + 2.2;
+    const answered = PANEL.filter((p) => t >= p.done).length;
+    const icon = allDone ? `<div class="tick" style="transform:scale(${back(prog(t, 11.4, 0.35))})">✓</div>` : `<div class="spin" style="transform:rotate(${t * 400}deg)"></div>`;
+    const status = allDone ? "4 of 4 answered · 4.0s" : `${answered} of 4 answered...`;
+    let inner = `<div class="head">${icon}<span>AI Bridge</span><code>ai_panel</code><span class="right">${status}</span></div><div class="grid">`;
+    for (const p of PANEL) {
+      const body = t < p.done
+        ? `<div class="wait"><div class="spin" style="width:13px;height:13px;transform:rotate(${t * 400}deg)"></div>thinking...</div>`
+        : streamed(p.text, t, p.done, 13);
+      inner += `<div class="mini"><div class="who"><i style="background:${p.col}"></i>${p.who}${t >= p.done ? `<span class="t">${p.ms}</span>` : ""}</div>${body}</div>`;
+    }
+    inner += "</div>";
+    html += block("tool", inner, P.tool, t);
+  }
+  if (t >= P.sum) {
+    const body = `<span class="agree" style="opacity:${easeOut(prog(t, P.sum, 0.4))}">✓ 4 of 4 answered · broad agreement</span><br>` + streamed(PSUM, t, P.sum + 0.5, 12);
+    html += block("asst", `<div class="av">C</div><div class="body">${body}</div>`, P.sum, t);
+  }
+  $("pfeed").innerHTML = html;
+  // cursor goes to send
+  const k = [[0, 880, 760], [3.1, 880, 760], [3.8, 1080, 657], [4.3, 1080, 657], [5.6, 1000, 760], [99, 1000, 760]];
+  let pos = [1000, 760];
+  for (let i = 0; i < k.length - 1; i++) if (t >= k[i][0] && t <= k[i + 1][0]) { const e = easeInOut((t - k[i][0]) / (k[i + 1][0] - k[i][0])); pos = [k[i][1] + (k[i + 1][1] - k[i][1]) * e, k[i][2] + (k[i + 1][2] - k[i][2]) * e]; }
+  $("pcur").style.left = pos[0] + "px"; $("pcur").style.top = pos[1] + "px";
+  if (t >= P.send && t < P.send + 0.45) { const r = prog(t, P.send, 0.45); const sz = 10 + 40 * easeOut(r); Object.assign($("prip").style, { left: 1090 - sz / 2 + "px", top: 668 - sz / 2 + "px", width: sz + "px", height: sz + "px", opacity: 1 - r }); }
+  else $("prip").style.opacity = 0;
+  $("psend").style.transform = t > P.send - 0.05 && t < P.send + 0.15 ? "scale(0.88)" : "scale(1)";
+  $("f4").style.opacity = 1 - prog(t, 0, 0.5) + prog(t, window.SCENES.panel - 0.5, 0.5);
+}
+
 function renderEnd(t) {
   show("end");
   $("e1").style.opacity = easeOut(prog(t, 0.2, 0.6));
   $("e1").style.transform = `translateY(${(1 - easeOut(prog(t, 0.2, 0.6))) * 20}px)`;
-  $("e2").style.opacity = easeOut(prog(t, 0.5, 0.6));
-  $("term").style.opacity = easeOut(prog(t, 0.8, 0.4));
-  const s = typed(INSTALL, t, 1.1, 48);
-  $("term").innerHTML = `<span class="p">$</span> ${esc(s)}<span class="caret" style="opacity:${Math.floor(t * 2.5) % 2 ? 0 : 1}"></span>`;
-  $("e3").style.opacity = easeOut(prog(t, 3.2, 0.5));
-  $("e4").style.opacity = easeOut(prog(t, 3.6, 0.5));
-  $("e4").style.transform = `scale(${0.85 + 0.15 * back(prog(t, 3.6, 0.5))})`;
+  $("chips").innerHTML = ALL.map((n, i) => { const a = back(prog(t, 0.6 + i * 0.09, 0.4)); return `<span class="chipx" style="opacity:${clamp(a)};transform:scale(${0.5 + 0.5 * a})">${n}</span>`; }).join("");
+  $("term").style.opacity = easeOut(prog(t, 2.3, 0.4));
+  const s3 = typed(INSTALL, t, 2.5, 52);
+  $("term").innerHTML = `<span class="p">$</span> ${esc(s3)}<span class="caret" style="opacity:${Math.floor(t * 2.5) % 2 ? 0 : 1}"></span>`;
+  $("e3").style.opacity = easeOut(prog(t, 4.9, 0.5));
+  $("e4").style.opacity = easeOut(prog(t, 5.3, 0.5));
+  $("e4").style.transform = `scale(${0.85 + 0.15 * back(prog(t, 5.3, 0.5))})`;
   $("f3").style.opacity = 1 - prog(t, 0, 0.4) + prog(t, window.SCENES.end - 0.5, 0.5);
 }
 
-window.render = (scene, t) => ({ title: renderTitle, chat: renderChat, end: renderEnd })[scene](t);
+window.render = (scene, t) => ({ title: renderTitle, chat: renderChat, panel: renderPanel, end: renderEnd })[scene](t);
 </script>
 </body>
 </html>

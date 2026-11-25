@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="Demo: Claude asks ChatGPT for a second opinion through the bridge and reconciles both answers" width="100%">
-  <br><sub>Claude drafts an answer, asks ChatGPT for a second opinion through the bridge, then merges both views. <a href="docs/assets/demo.mp4">Watch the full-quality MP4</a>. (Illustrative session.)</sub>
+  <img src="docs/assets/demo.gif" alt="Demo: Claude asks ChatGPT for a second opinion, then runs a panel of ChatGPT, Gemini, Grok and DeepSeek and summarises their answers" width="100%">
+  <br><sub>Claude gets a second opinion from ChatGPT, then puts one question to ChatGPT, Gemini, Grok and DeepSeek at once and sums up where they agree. <a href="docs/assets/demo.mp4">Watch the full-quality MP4</a>. (Illustrative session.)</sub>
 </p>
 
 <h1 align="center">ChatGPT MCP Bridge</h1>
