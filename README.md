@@ -52,9 +52,12 @@ Switch each one on by adding its API key. Use as many as you like. Full list, ke
 It is an [MCP](https://modelcontextprotocol.io) server, so it works with **Claude Desktop**, **Claude Code**, **claude.ai custom connectors** and any other MCP client.
 
 ```text
- You ──► Claude ──(MCP)──► ChatGPT MCP Bridge ──(HTTPS)──► OpenAI API (ChatGPT models)
-            ▲                                                     │
-            └──────────────── ChatGPT's reply ◄───────────────────┘
+                                                      ┌──► ChatGPT (OpenAI)
+                                                      ├──► Gemini (Google)
+ You ──► Claude ──(MCP)──► ChatGPT MCP Bridge ──(HTTPS)┼──► Grok, DeepSeek, Mistral, Llama ...
+            ▲                                         ├──► Claude, Perplexity, Kimi, Qwen ...
+            │                                         └──► Ollama / LM Studio (local)
+            └──────────────────── answers ◄──────────────────────┘
 ```
 
 ---
