@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="docs/assets/banner.svg" alt="ChatGPT MCP Bridge: Claude and ChatGPT working together" width="100%">
+  <img src="docs/assets/demo.gif" alt="Demo: Claude asks ChatGPT for a second opinion through the bridge and reconciles both answers" width="100%">
+  <br><sub>Claude drafts an answer, asks ChatGPT for a second opinion through the bridge, then merges both views. <a href="docs/assets/demo.mp4">Watch the full-quality MP4</a>. (Illustrative session.)</sub>
 </p>
 
 <h1 align="center">ChatGPT MCP Bridge</h1>
@@ -23,11 +24,6 @@
   <a href="#remote--claudeai-connector-http-mode">claude.ai / remote</a> ·
   <a href="docs/TOOLS.md">Tool reference</a> ·
   <a href="docs/TROUBLESHOOTING.md">Troubleshooting</a>
-</p>
-
-<p align="center">
-  <img src="docs/assets/demo.gif" alt="Demo: Claude asks ChatGPT for a second opinion through the bridge and reconciles both answers" width="100%">
-  <br><sub>Claude drafts an answer, asks ChatGPT for a second opinion through the bridge, then merges both views. <a href="docs/assets/demo.mp4">Watch the full-quality MP4</a>. (Illustrative session.)</sub>
 </p>
 
 ### One-line install for Claude Code
