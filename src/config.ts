@@ -8,10 +8,27 @@
  * See `.env.example` and docs/CONFIGURATION.md for the full reference.
  */
 
+import { PROVIDERS, envPrefix, findProvider, type ProviderDef } from "./providers.js";
+
 export type LogLevel = "debug" | "info" | "warn" | "error" | "silent";
 
+/** A provider that has been switched on (its key or local URL is set). */
+export interface ProviderConfig {
+  def: ProviderDef;
+  apiKey: string;
+  baseURL: string;
+  /** Default model for this provider ("" means auto-pick from its model list). */
+  model: string;
+  /** True when the model came from the catalogue rather than the user's settings. */
+  modelIsDefault: boolean;
+}
+
 export interface BridgeConfig {
-  /** OpenAI API key (required). */
+  /** Every provider that is switched on, keyed by id. */
+  providers: Record<string, ProviderConfig>;
+  /** Provider used when a tool call does not name one. */
+  defaultProvider: string;
+  /** OpenAI API key ("" if OpenAI is not configured). */
   apiKey: string;
   /** Optional custom base URL, for Azure OpenAI, OpenRouter, Ollama, LM Studio, etc. */
   baseURL?: string;
@@ -19,7 +36,7 @@ export interface BridgeConfig {
   organization?: string;
   /** Optional OpenAI project ID. */
   project?: string;
-  /** Default chat model used when a tool call does not name one. */
+  /** Default chat model of the default provider. */
   defaultModel: string;
   /** Default image model for chatgpt_generate_image. */
   imageModel: string;
@@ -112,14 +129,56 @@ export const DEFAULTS = {
  * Build the configuration from environment variables.
  * Throws ConfigError with a human-friendly message if something is wrong.
  */
+function truthy(v: string | undefined): boolean {
+  return v !== undefined && /^(1|true|yes|on)$/i.test(v.trim());
+}
+
+/** Work out which providers are switched on from the environment. */
+export function loadProviders(env: Env): Record<string, ProviderConfig> {
+  const out: Record<string, ProviderConfig> = {};
+  for (const def of PROVIDERS) {
+    const prefix = envPrefix(def);
+    const key = def.keyEnv.map((k) => str(env, k)).find(Boolean) ?? "";
+    const baseOverride = str(env, `${prefix}_BASE_URL`);
+    const enabled = def.local ? truthy(env[`${prefix}_ENABLED`]) || Boolean(baseOverride) : Boolean(key);
+    if (!enabled) continue;
+    const userModel = str(env, `${prefix}_MODEL`);
+    out[def.id] = {
+      def,
+      apiKey: key || (def.local ? def.id : ""),
+      baseURL: baseOverride ?? def.baseURL,
+      model: userModel ?? def.defaultModel,
+      modelIsDefault: !userModel,
+    };
+  }
+  return out;
+}
+
+/**
+ * Build the configuration from environment variables.
+ * Throws ConfigError with a human-friendly message if something is wrong.
+ */
 export function loadConfig(env: Env = process.env, opts: { requireApiKey?: boolean } = {}): BridgeConfig {
   const requireApiKey = opts.requireApiKey ?? true;
-  const apiKey = str(env, "OPENAI_API_KEY") ?? "";
-  if (requireApiKey && !apiKey) {
+  const providers = loadProviders(env);
+  const ids = Object.keys(providers);
+  if (requireApiKey && ids.length === 0) {
     throw new ConfigError(
-      "OPENAI_API_KEY is not set. Create a key at https://platform.openai.com/api-keys and add it to the " +
-        '"env" section of your Claude config (see README, step 3).',
+      "No AI provider is configured. Set at least one API key, for example OPENAI_API_KEY (ChatGPT), " +
+        "GEMINI_API_KEY, XAI_API_KEY, ANTHROPIC_API_KEY or DEEPSEEK_API_KEY, in the \"env\" section of your " +
+        "Claude config (see README). Run with --providers to see every supported provider.",
     );
+  }
+
+  const requestedDefault = str(env, "DEFAULT_PROVIDER");
+  let defaultProvider = providers.openai ? "openai" : (ids[0] ?? "openai");
+  if (requestedDefault) {
+    const def = findProvider(requestedDefault);
+    if (!def) throw new ConfigError(`DEFAULT_PROVIDER "${requestedDefault}" is not a known provider.`);
+    if (requireApiKey && !providers[def.id]) {
+      throw new ConfigError(`DEFAULT_PROVIDER is "${def.id}" but ${def.keyEnv[0]} is not set.`);
+    }
+    defaultProvider = def.id;
   }
 
   const logLevelRaw = (str(env, "LOG_LEVEL") ?? "info").toLowerCase() as LogLevel;
@@ -128,11 +187,13 @@ export function loadConfig(env: Env = process.env, opts: { requireApiKey?: boole
   }
 
   return {
-    apiKey,
+    providers,
+    defaultProvider,
+    apiKey: providers.openai?.apiKey ?? "",
     baseURL: str(env, "OPENAI_BASE_URL"),
     organization: str(env, "OPENAI_ORG_ID"),
     project: str(env, "OPENAI_PROJECT_ID"),
-    defaultModel: str(env, "OPENAI_MODEL") ?? DEFAULTS.model,
+    defaultModel: providers[defaultProvider]?.model || DEFAULTS.model,
     imageModel: str(env, "OPENAI_IMAGE_MODEL") ?? DEFAULTS.imageModel,
     allowedModels: list(env, "ALLOWED_MODELS"),
     maxOutputTokens: int(env, "MAX_OUTPUT_TOKENS", DEFAULTS.maxOutputTokens, 1),

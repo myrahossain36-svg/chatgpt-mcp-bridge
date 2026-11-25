@@ -6,15 +6,16 @@
 <h1 align="center">ChatGPT MCP Bridge</h1>
 
 <p align="center">
-  <b>Give Claude a phone line to ChatGPT.</b><br>
-  Ask questions, hold multi-turn conversations, get second opinions and code reviews, compare models side by side, pull structured JSON and generate images, all without leaving Claude.
+  <b>Give Claude a phone line to ChatGPT, and to every other major AI.</b><br>
+  ChatGPT, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, Claude itself and local models: ask any of them, run an AI panel, get second opinions and code reviews, compare models side by side and generate images, all without leaving Claude.
 </p>
 
 <p align="center">
   <a href="https://github.com/myrahossain36-svg/chatgpt-mcp-bridge/actions/workflows/ci.yml"><img src="https://github.com/myrahossain36-svg/chatgpt-mcp-bridge/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/MCP-compatible-7c3aed" alt="MCP compatible">
+  <img src="https://img.shields.io/badge/AI%20providers-15-f59e0b" alt="15 AI providers">
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen" alt="Node 20+">
-  <img src="https://img.shields.io/badge/tests-41%20passing-success" alt="41 tests">
+  <img src="https://img.shields.io/badge/tests-61%20passing-success" alt="61 tests">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT licence"></a>
 </p>
 
@@ -22,6 +23,7 @@
   <a href="#quick-start-claude-desktop-5-minutes">Claude Desktop</a> ·
   <a href="#quick-start-claude-code">Claude Code</a> ·
   <a href="#remote--claudeai-connector-http-mode">claude.ai / remote</a> ·
+  <a href="docs/PROVIDERS.md">15 AI providers</a> ·
   <a href="docs/TOOLS.md">Tool reference</a> ·
   <a href="docs/TROUBLESHOOTING.md">Troubleshooting</a>
 </p>
@@ -32,9 +34,20 @@
 claude mcp add chatgpt --scope user -e OPENAI_API_KEY=sk-your-key -- npx -y github:myrahossain36-svg/chatgpt-mcp-bridge
 ```
 
-### Why two models?
+### Why more than one AI?
 
-Different models make different mistakes. Letting Claude consult ChatGPT gives you a built-in cross-check: Claude drafts, ChatGPT challenges, Claude reconciles, and you see where they agree and where they do not. It is also the quickest way to try OpenAI's models on your real work without switching apps.
+Different models make different mistakes. Letting Claude consult ChatGPT, Gemini, Grok and the rest gives you a built-in cross-check: Claude drafts, the others challenge, Claude reconciles, and you see where they agree and where they do not. It is also the quickest way to try every major model on your real work without switching apps.
+
+### Every major AI, one bridge
+
+| | | | |
+| --- | --- | --- | --- |
+| **ChatGPT** (OpenAI) | **Gemini** (Google) | **Grok** (xAI) | **Claude** (Anthropic) |
+| **DeepSeek** | **Mistral** | **Llama** (Meta) | **Perplexity** (live web) |
+| **Kimi** (Moonshot) | **Qwen** (Alibaba) | **Cohere** | **Groq** (fast open models) |
+| **OpenRouter** (hundreds more) | **Ollama** (local, free) | **LM Studio** (local, free) | |
+
+Switch each one on by adding its API key. Use as many as you like. Full list, key links and settings: [docs/PROVIDERS.md](docs/PROVIDERS.md). It also works in reverse: [use it from ChatGPT](docs/USE-FROM-CHATGPT.md) to reach Claude.
 
 It is an [MCP](https://modelcontextprotocol.io) server, so it works with **Claude Desktop**, **Claude Code**, **claude.ai custom connectors** and any other MCP client.
 
@@ -56,7 +69,7 @@ It is an [MCP](https://modelcontextprotocol.io) server, so it works with **Claud
 6. [The tools](#the-tools)
 7. [Built-in prompts](#built-in-prompts)
 8. [Configuration](#configuration)
-9. [Using other providers (Azure, OpenRouter, Ollama)](#using-other-providers)
+9. [Using other providers (Gemini, Grok, Claude, DeepSeek and more)](#using-other-providers)
 10. [Troubleshooting](#troubleshooting)
 11. [Security and costs](#security-and-costs)
 12. [Development](#development)
@@ -77,19 +90,23 @@ Once installed, just talk to Claude normally:
 | "Ask ChatGPT to argue against my plan." | `chatgpt_debate` stress-tests the idea. |
 | "Use ChatGPT to extract the names and dates from this text as JSON." | `chatgpt_structured` returns a parsed JSON object. |
 | "Generate an image of a lighthouse at dawn with OpenAI." | `chatgpt_generate_image` returns the image right in the chat. |
-| "Compare how gpt-5.6-sol and gpt-6.1-terra answer this question." | `chatgpt_compare_models` runs both in parallel and shows the answers side by side. |
+| "Ask Gemini what it thinks of this contract clause." | `ai_ask` with `provider: "gemini"` sends it to Google Gemini. |
+| "Run an AI panel: is this business plan realistic?" | `ai_panel` asks every AI you have switched on at once, then Claude summarises where they agree. |
+| "Compare ChatGPT, Grok and DeepSeek on this puzzle." | `chatgpt_compare_models` runs them in parallel and shows the answers side by side. |
 | "Which ChatGPT models can I use?" | `chatgpt_list_models` lists the models your key can access. |
 
 Features at a glance:
 
-- 12 tools, 3 ready-made prompts, and conversation threads exposed as MCP resources
+- 15 AI providers: ChatGPT, Claude, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, Groq, OpenRouter, Ollama, LM Studio
+- Automatic model fallback when a provider retires a model name
+- 15 tools, 3 ready-made prompts, and conversation threads exposed as MCP resources
 - Multi-turn memory per `conversation_id`, with optional saving to disk
 - Works with any OpenAI-compatible API (Azure OpenAI, OpenRouter, Ollama, LM Studio, vLLM)
 - Automatic retries, timeouts, and clear "how to fix" messages for every common error
 - Copes with models that reject `temperature` or other settings (drops them and retries)
 - Optional model allow-list to control cost
 - Two transports: **stdio** (local) and **Streamable HTTP** (remote, with bearer-token auth)
-- Dockerfile, Docker Compose file, GitHub Actions CI and 41 automated tests
+- Dockerfile, Docker Compose file, GitHub Actions CI and 61 automated tests
 - API keys are never logged or returned by any tool
 
 ---
@@ -191,7 +208,7 @@ Quit Claude Desktop **completely** (macOS: `Cmd+Q`; Windows: right-click the tra
 
 ### Step 5: Try it
 
-Start a new chat and click the tools/connectors icon. You should see **chatgpt** with 12 tools. Then type:
+Start a new chat and click the tools/connectors icon. You should see **chatgpt** with 15 tools. Then type:
 
 > Use chatgpt_server_info to check the ChatGPT bridge, then ask ChatGPT to tell me a fun fact about octopuses.
 
@@ -262,11 +279,14 @@ Step-by-step hosting instructions, including the security trade-offs of putting 
 
 | Tool | What it does | Key inputs |
 | --- | --- | --- |
-| `chatgpt_ask` | Send ChatGPT a message. Reuse a `conversation_id` for multi-turn chat. | `message`, `conversation_id?`, `system_prompt?`, `model?` |
+| `chatgpt_ask` | Send ChatGPT (the default AI) a message. Reuse a `conversation_id` for multi-turn chat. | `message`, `conversation_id?`, `system_prompt?`, `provider?`, `model?` |
+| `ai_ask` | Ask a specific AI by name: Gemini, Grok, Claude, DeepSeek, and so on. | `provider`, `message`, `conversation_id?` |
+| `ai_panel` | Ask every configured AI (or a chosen list) the same question at once. | `message`, `providers?[]` |
+| `ai_list_providers` | Which AIs are switched on, and how to switch on the rest. | none |
 | `chatgpt_second_opinion` | Critical review of an answer, plan or draft. Verdict, what is right, what is wrong, better answer. | `question`, `answer`, `focus?` |
 | `chatgpt_code_review` | Code review with severity ratings and concrete fixes. | `code`, `language?`, `context?`, `focus?[]` |
 | `chatgpt_debate` | Argue for, against or both sides of a position. | `position`, `stance?` |
-| `chatgpt_compare_models` | Same prompt to 2 to 5 models in parallel, answers side by side with timing and tokens. | `message`, `models[]`, `system_prompt?` |
+| `chatgpt_compare_models` | Same prompt to 2 to 8 models (any providers) in parallel, side by side with timing and tokens. | `message`, `models[]`, `system_prompt?` |
 | `chatgpt_structured` | Get a JSON object back (parsed and validated). | `instruction`, `json_shape`, `input?` |
 | `chatgpt_generate_image` | Create 1 to 4 images, returned into the chat (and optionally saved). | `prompt`, `size?`, `quality?`, `count?` |
 | `chatgpt_list_conversations` | List the conversation threads the bridge holds. | none |
@@ -275,7 +295,7 @@ Step-by-step hosting instructions, including the security trade-offs of putting 
 | `chatgpt_list_models` | Models your key can use (chat models by default). | `filter?`, `chat_only?` |
 | `chatgpt_server_info` | Version and settings (never the key). Good health check. | none |
 
-Every chat tool also accepts `model`, `temperature`, `max_output_tokens` and `reasoning_effort` (`minimal`/`low`/`medium`/`high`). Each reply ends with a short footer showing the model used and token counts, so you can keep an eye on cost.
+Every chat tool also accepts `provider` (which AI to use), `model`, `temperature`, `max_output_tokens` and `reasoning_effort` (`minimal`/`low`/`medium`/`high`). Each reply ends with a short footer showing the model used and token counts, so you can keep an eye on cost.
 
 Full reference with example calls and outputs: [docs/TOOLS.md](docs/TOOLS.md).
 
@@ -297,7 +317,9 @@ All settings are environment variables. Put them in the `"env"` block of your Cl
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | *(required)* | Your OpenAI API key. |
+| `OPENAI_API_KEY` | | ChatGPT. At least one provider key is required; see [PROVIDERS.md](docs/PROVIDERS.md) for `GEMINI_API_KEY`, `XAI_API_KEY`, `ANTHROPIC_API_KEY` and the rest. |
+| `DEFAULT_PROVIDER` | `openai` | Which AI the tools use when none is named. |
+| `<PROVIDER>_MODEL`, `<PROVIDER>_BASE_URL` | | Per-provider model and address, e.g. `GEMINI_MODEL`. |
 | `OPENAI_MODEL` | `gpt-5.6-sol` | Default chat model. |
 | `OPENAI_IMAGE_MODEL` | `gpt-image-2` | Default image model. |
 | `ALLOWED_MODELS` | *(any)* | Comma-separated allow-list, e.g. `gpt-5.6-sol,gpt-image-2`. |
@@ -326,10 +348,23 @@ More detail: [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
 
 ## Using other providers
 
-Because the bridge speaks the OpenAI Chat Completions format, it works with anything OpenAI-compatible. Set `OPENAI_BASE_URL` and `OPENAI_MODEL`:
+Add any of these keys alongside (or instead of) your OpenAI key:
 
-| Provider | `OPENAI_BASE_URL` | Example `OPENAI_MODEL` |
-| --- | --- | --- |
+```json
+"env": {
+  "OPENAI_API_KEY": "sk-...",
+  "GEMINI_API_KEY": "...",
+  "XAI_API_KEY": "xai-...",
+  "ANTHROPIC_API_KEY": "...",
+  "DEEPSEEK_API_KEY": "sk-..."
+}
+```
+
+Then ask Claude: *"Ask Grok..."*, *"Run an AI panel on..."*, or *"Which AIs are switched on?"*. Local models work too: install [Ollama](https://ollama.com), pull a model, and add `"OLLAMA_ENABLED": "true"`.
+
+The full list of 15 providers, where to get each key, model settings and regional notes is in [docs/PROVIDERS.md](docs/PROVIDERS.md). Azure OpenAI and other compatible servers: [docs/OTHER-PROVIDERS.md](docs/OTHER-PROVIDERS.md).
+
+--- | --- | --- |
 | OpenRouter | `https://openrouter.ai/api/v1` | `openai/gpt-5.6-sol` |
 | Ollama (local) | `http://localhost:11434/v1` | `llama3.1` |
 | LM Studio (local) | `http://localhost:1234/v1` | the loaded model's ID |
@@ -380,7 +415,7 @@ Report vulnerabilities as described in [SECURITY.md](SECURITY.md).
 npm install          # install and build
 npm run dev          # run from source (stdio) with tsx
 npm run dev:http     # run from source in HTTP mode
-npm test             # 41 tests, no API key or network needed
+npm test             # 61 tests, no API key or network needed
 npm run typecheck
 npm run build
 npm run inspect      # open the MCP Inspector against dist/index.js
@@ -393,7 +428,8 @@ src/
   index.ts              CLI entry point (stdio or --http)
   cli.ts                argument parsing
   config.ts             environment variable loading and validation
-  backend.ts            OpenAI client wrapper, retries, error explanations
+  providers.ts          the catalogue of 15 AI providers
+  backend.ts            OpenAI-compatible client, multi-provider router, model fallback
   conversations.ts      multi-turn thread store (memory or JSON file)
   server.ts             builds the MCP server and registers everything
   prompts.ts            MCP prompts and resources
@@ -411,9 +447,13 @@ How it fits together: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Contribution
 
 ## FAQ
 
-**Is this official?** No. It is an independent open-source project, not made or endorsed by OpenAI or Anthropic. "ChatGPT" and "Claude" are trademarks of their owners.
+**Is this official?** No. It is an independent open-source project, not made or endorsed by OpenAI, Anthropic, Google, xAI or any other provider. All product names are trademarks of their owners.
 
-**Can it use my ChatGPT Plus subscription instead of an API key?** No. It uses the OpenAI API, which needs an API key and is billed separately.
+**Can it use my ChatGPT Plus subscription instead of an API key?** No. It uses each provider's API, which needs an API key and is billed separately.
+
+**Which AIs does it support?** 15 providers: ChatGPT, Claude, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, Groq, OpenRouter (hundreds of models), Ollama and LM Studio. See [PROVIDERS.md](docs/PROVIDERS.md).
+
+**Can ChatGPT use it to reach Claude?** Yes, by hosting it in HTTP mode. See [USE-FROM-CHATGPT.md](docs/USE-FROM-CHATGPT.md).
 
 **Does ChatGPT see my whole Claude chat?** No. It only sees what Claude sends in each tool call (plus earlier turns of the same `conversation_id`).
 

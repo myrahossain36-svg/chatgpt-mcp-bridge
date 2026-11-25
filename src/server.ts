@@ -18,15 +18,18 @@ import { registerInfoTools } from "./tools/infoTools.js";
 import type { ToolContext } from "./tools/shared.js";
 import { NAME, VERSION } from "./version.js";
 
-export const SERVER_INSTRUCTIONS = `This server connects you to ChatGPT (OpenAI models).
-- chatgpt_ask: send ChatGPT a message. Pass a conversation_id to keep a multi-turn thread.
+export const SERVER_INSTRUCTIONS = `This server connects you to ChatGPT and other AI models (Gemini, Grok, Claude, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, local models).
+- chatgpt_ask: send ChatGPT (the default AI) a message. Pass a conversation_id to keep a multi-turn thread.
+- ai_ask: ask a specific AI by name (provider="gemini", "grok", "claude", ...).
+- ai_panel: ask every configured AI the same question at once, then summarise agreement and disagreement.
+- ai_list_providers: see which AIs are switched on and how to add more.
 - chatgpt_second_opinion / chatgpt_code_review / chatgpt_debate: get a critical outside view.
 - chatgpt_structured: get a JSON object back.
 - chatgpt_compare_models: run one prompt on several models side by side.
 - chatgpt_generate_image: create images.
 - chatgpt_list_models / chatgpt_server_info: discover models and check the bridge.
-ChatGPT cannot see your conversation with the user. Always include the full context it needs.
-Tell the user when an answer came from ChatGPT rather than from you.`;
+The other AIs cannot see your conversation with the user. Always include the full context they need.
+Tell the user which AI each answer came from.`;
 
 export interface ServerDeps {
   config: BridgeConfig;
@@ -37,7 +40,7 @@ export interface ServerDeps {
 
 export function createServer(deps: ServerDeps): McpServer {
   const server = new McpServer(
-    { name: NAME, version: VERSION, title: "ChatGPT Bridge" },
+    { name: NAME, version: VERSION, title: "ChatGPT Bridge (multi-AI)" },
     {
       capabilities: { tools: {}, prompts: {}, resources: {}, logging: {} },
       instructions: SERVER_INSTRUCTIONS,

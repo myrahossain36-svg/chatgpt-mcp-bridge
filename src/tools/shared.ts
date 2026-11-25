@@ -4,7 +4,8 @@
 import { z } from "zod";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ChatBackend, ChatResult } from "../backend.js";
-import { BackendError } from "../backend.js";
+import { BackendError, notConfigured } from "../backend.js";
+import { findProvider } from "../providers.js";
 import type { BridgeConfig } from "../config.js";
 import { ConfigError, assertModelAllowed } from "../config.js";
 import type { ConversationStore } from "../conversations.js";
@@ -19,12 +20,25 @@ export interface ToolContext {
 }
 
 /** Common optional model settings, reused by several tools. */
+export const providerOption = z
+  .string()
+  .optional()
+  .describe(
+    "Which AI to ask: openai (ChatGPT), anthropic (Claude), gemini, xai (Grok), deepseek, mistral, meta (Llama), " +
+      "perplexity, moonshot (Kimi), qwen, cohere, groq, openrouter, ollama or lmstudio. Leave empty for the default. " +
+      "Run ai_list_providers to see which are configured.",
+  );
+
 export const modelOptions = {
+  provider: providerOption,
   model: z
     .string()
     .min(1)
     .optional()
-    .describe("OpenAI model ID to use, e.g. 'gpt-5.6-sol'. Leave empty to use the server default (OPENAI_MODEL)."),
+    .describe(
+      "Model ID for the chosen provider, e.g. 'gpt-5.6-sol' or 'gemini-3.8-flash'. You can also write 'provider:model', " +
+        "e.g. 'xai:grok-4.6'. Leave empty to use that provider's default.",
+    ),
   temperature: z
     .number()
     .min(0)
@@ -44,10 +58,49 @@ export const modelOptions = {
     .describe("For reasoning models only: how hard the model should think. Higher is slower and more expensive."),
 };
 
+export interface Target {
+  /** Provider id, e.g. "gemini". */
+  provider: string;
+  /** Model id ("" lets the router auto-pick, for local servers). */
+  model: string;
+  /** Display name, e.g. "Google Gemini". */
+  name: string;
+}
+
+/**
+ * Work out which provider and model a tool call means.
+ * Accepts a provider id or alias ("grok", "claude"), and 'provider:model' shorthand in the model field.
+ */
+export function resolveTarget(ctx: ToolContext, provider?: string, model?: string): Target {
+  let p = provider?.trim() || undefined;
+  let m = model?.trim() || undefined;
+  if (m && m.includes(":")) {
+    const [prefix, ...rest] = m.split(":");
+    const def = findProvider(prefix);
+    if (def && rest.join(":")) {
+      if (p && findProvider(p)?.id !== def.id) {
+        throw new ConfigError(`provider "${p}" conflicts with model "${m}".`);
+      }
+      p = def.id;
+      m = rest.join(":");
+    }
+  }
+  let id = ctx.config.defaultProvider;
+  if (p) {
+    const def = findProvider(p);
+    if (!def) throw new ConfigError(`Unknown AI provider "${p}". Run ai_list_providers to see the options.`);
+    id = def.id;
+  }
+  const pc = ctx.config.providers[id];
+  if (!pc) throw notConfigured(id);
+  const finalModel = m ?? pc.model;
+  if (finalModel) assertModelAllowed(ctx.config, finalModel);
+  return { provider: id, model: finalModel, name: pc.def.name };
+}
+
+/** Backwards-compatible helper: model for the default provider. */
 export function resolveModel(ctx: ToolContext, requested?: string): string {
-  const model = requested?.trim() || ctx.config.defaultModel;
-  assertModelAllowed(ctx.config, model);
-  return model;
+  return resolveTarget(ctx, undefined, requested).model;
 }
 
 export function textResult(text: string, structured?: Record<string, unknown>): CallToolResult {
@@ -74,7 +127,10 @@ export function errorResult(err: unknown): CallToolResult {
 
 /** A short footer so Claude can see which model answered and what it cost. */
 export function footer(result: ChatResult, extra: string[] = []): string {
-  const parts = [`model: ${result.model}`];
+  const parts: string[] = [];
+  const def = result.provider ? findProvider(result.provider) : undefined;
+  if (def) parts.push(def.name);
+  parts.push(`model: ${result.model}${result.autoSelectedModel ? " (auto-selected)" : ""}`);
   if (result.usage?.totalTokens !== undefined) {
     parts.push(`tokens: ${result.usage.inputTokens ?? "?"} in / ${result.usage.outputTokens ?? "?"} out`);
   }

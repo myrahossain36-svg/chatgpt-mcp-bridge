@@ -7,7 +7,8 @@
  *   chatgpt-mcp-bridge --http --port 8080 --host 0.0.0.0
  *   chatgpt-mcp-bridge --help | --version
  */
-import { OpenAIBackend } from "./backend.js";
+import { RouterBackend } from "./backend.js";
+import { PROVIDERS } from "./providers.js";
 import { ConfigError, loadConfig } from "./config.js";
 import { ConversationStore } from "./conversations.js";
 import { createLogger } from "./logger.js";
@@ -27,12 +28,16 @@ Usage:
   ${NAME} --version            Print the version
   ${NAME} --help               Show this help
 
-Required environment:
-  OPENAI_API_KEY               Your OpenAI API key
+  ${NAME} --providers          List every supported AI and the key that switches it on
+
+Required environment (at least one):
+  OPENAI_API_KEY               ChatGPT. Others: GEMINI_API_KEY, XAI_API_KEY, ANTHROPIC_API_KEY,
+                               DEEPSEEK_API_KEY, MISTRAL_API_KEY, PERPLEXITY_API_KEY, ... (see --providers)
 
 Common optional environment:
-  OPENAI_MODEL                 Default chat model (default: gpt-5.6-sol)
-  OPENAI_BASE_URL              Use Azure OpenAI, OpenRouter, Ollama, LM Studio, etc.
+  DEFAULT_PROVIDER             Which AI chatgpt_ask uses (default: openai if set)
+  OPENAI_MODEL, GEMINI_MODEL   Default model per provider (<PROVIDER>_MODEL)
+  OPENAI_BASE_URL              Override a provider's address (<PROVIDER>_BASE_URL)
   MCP_AUTH_TOKEN               Bearer token required by the HTTP endpoint
   LOG_LEVEL                    debug | info | warn | error | silent
 
@@ -49,13 +54,21 @@ async function main(): Promise<void> {
     process.stderr.write(`${VERSION}\n`);
     return;
   }
+  if (args.providers) {
+    const lines = PROVIDERS.map(
+      (p) => `  ${p.id.padEnd(11)} ${p.name.padEnd(42)} ${p.local ? `${p.id.toUpperCase()}_ENABLED=true` : p.keyEnv[0]}`,
+    );
+    process.stderr.write(`Supported AI providers (set the variable on the right to switch one on):\n${lines.join("\n")}\n`);
+    return;
+  }
 
   const config = loadConfig();
   if (args.port) config.http.port = args.port;
   if (args.host) config.http.host = args.host;
 
   const log = createLogger(config.logLevel);
-  const backend = new OpenAIBackend(config, log);
+  const backend = new RouterBackend(config, log);
+  log.info(`AI providers on: ${Object.keys(config.providers).join(", ")} (default: ${config.defaultProvider})`);
   const store = new ConversationStore(
     {
       maxConversations: config.maxConversations,

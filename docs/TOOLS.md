@@ -6,6 +6,7 @@ All chat tools accept these optional settings:
 
 | Input | Type | Notes |
 | --- | --- | --- |
+| `provider` | string | Which AI: `openai`, `anthropic`, `gemini`, `xai`, `deepseek`, `mistral`, `meta`, `perplexity`, `moonshot`, `qwen`, `cohere`, `groq`, `openrouter`, `ollama`, `lmstudio` (or aliases `chatgpt`, `claude`, `grok`, `kimi`, `llama`). Default: `DEFAULT_PROVIDER`. |
 | `model` | string | Any model ID your key can use. Default: `OPENAI_MODEL`. Must be in `ALLOWED_MODELS` if that is set. |
 | `temperature` | number 0 to 2 | Lower is more focused. Dropped automatically for models that do not accept it. |
 | `max_output_tokens` | integer | Reply length limit. Default: `MAX_OUTPUT_TOKENS`. |
@@ -17,6 +18,37 @@ Each reply ends with a footer such as:
 ---
 [model: gpt-5.6-sol | tokens: 212 in / 388 out | conversation: launch-ideas | turns kept: 3]
 ```
+
+---
+
+## `ai_ask`
+
+Same as `chatgpt_ask`, but `provider` is required, so Claude uses it whenever you name an AI ("ask Gemini...").
+
+```json
+{ "provider": "gemini", "message": "Summarise the main argument of this paragraph: ..." }
+```
+
+---
+
+## `ai_panel`
+
+Asks several AIs the same question at once and returns every answer side by side.
+
+| Input | Required | Notes |
+| --- | --- | --- |
+| `message` | yes | The question. |
+| `providers` | no | e.g. `["openai", "gemini", "grok"]`. Default: every configured provider (up to 8). |
+| `system_prompt` | no | Applied to every AI. |
+| `max_output_tokens` | no | Per AI. |
+
+AIs that are not configured, or that fail, are reported in their own section with a fix; the others still answer.
+
+---
+
+## `ai_list_providers`
+
+Shows all 15 providers, which are switched on (with their default models), and the exact setting that switches each of the others on. Never shows keys.
 
 ---
 
@@ -93,7 +125,7 @@ Runs one prompt on several models at the same time.
 | Input | Required | Notes |
 | --- | --- | --- |
 | `message` | yes | The prompt. |
-| `models` | yes | 2 to 5 model IDs. Duplicates are removed; each must pass `ALLOWED_MODELS`. |
+| `models` | yes | 2 to 8 entries: model IDs (`gpt-5.6-sol`), provider names (`gemini`, `grok`) or `provider:model` (`xai:grok-4.6`). Duplicates are skipped. |
 | `system_prompt` | no | Applied to every model. |
 | `max_output_tokens` | no | Per model. |
 

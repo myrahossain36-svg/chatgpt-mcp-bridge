@@ -10,7 +10,7 @@ export function registerConversationTools(server: McpServer, ctx: ToolContext): 
     "chatgpt_list_conversations",
     {
       title: "List ChatGPT conversations",
-      description: "List the ChatGPT conversation threads this bridge is holding, newest first.",
+      description: "List the conversation threads this bridge is holding (with ChatGPT or any other AI), newest first.",
       inputSchema: {},
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
@@ -22,7 +22,8 @@ export function registerConversationTools(server: McpServer, ctx: ToolContext): 
         });
       }
       const lines = items.map(
-        (c) => `- ${c.id}: "${c.title}" (${c.turns} turn(s), model ${c.model}, last used ${c.updatedAt})`,
+        (c) =>
+          `- ${c.id}: "${c.title}" (${c.turns} turn(s), ${c.provider ? `${c.provider}/` : ""}${c.model}, last used ${c.updatedAt})`,
       );
       return textResult(`${items.length} conversation(s):\n${lines.join("\n")}`, { conversations: items });
     }),
@@ -44,9 +45,9 @@ export function registerConversationTools(server: McpServer, ctx: ToolContext): 
         return textResult(`No conversation called "${conversation_id}". Use chatgpt_list_conversations to see them.`);
       }
       const body = conv.messages
-        .map((m) => `### ${m.role === "assistant" ? "ChatGPT" : m.role === "user" ? "Claude/user" : "System"}\n${m.content}`)
+        .map((m) => `### ${m.role === "assistant" ? "AI" : m.role === "user" ? "Claude/user" : "System"}\n${m.content}`)
         .join("\n\n");
-      return textResult(`Conversation ${conv.id} ("${conv.title}"), model ${conv.model}\n\n${body}`, {
+      return textResult(`Conversation ${conv.id} ("${conv.title}"), ${conv.provider ? `${conv.provider}/` : ""}${conv.model}\n\n${body}`, {
         conversation: conv as unknown as Record<string, unknown>,
       });
     }),

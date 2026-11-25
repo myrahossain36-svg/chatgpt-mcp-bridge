@@ -8,6 +8,7 @@
 import OpenAI from "openai";
 import type { BridgeConfig } from "./config.js";
 import type { Logger } from "./logger.js";
+import { findProvider, pickModel } from "./providers.js";
 
 export type Role = "system" | "user" | "assistant";
 
@@ -19,6 +20,8 @@ export interface ChatMessage {
 export type ReasoningEffort = "minimal" | "low" | "medium" | "high";
 
 export interface ChatRequest {
+  /** Provider id (see providers.ts). Defaults to the configured default provider. */
+  provider?: string;
   model: string;
   messages: ChatMessage[];
   maxOutputTokens?: number;
@@ -37,6 +40,10 @@ export interface Usage {
 export interface ChatResult {
   text: string;
   model: string;
+  /** Provider that answered. */
+  provider?: string;
+  /** Set when the requested model was unavailable and another was picked automatically. */
+  autoSelectedModel?: boolean;
   finishReason?: string;
   usage?: Usage;
   /** Parameters the backend had to drop because the model rejected them. */
@@ -44,6 +51,7 @@ export interface ChatResult {
 }
 
 export interface ImageRequest {
+  provider?: string;
   model: string;
   prompt: string;
   size?: string;
@@ -65,7 +73,7 @@ export interface ModelInfo {
 export interface ChatBackend {
   chat(req: ChatRequest): Promise<ChatResult>;
   generateImage(req: ImageRequest): Promise<ImageResult>;
-  listModels(): Promise<ModelInfo[]>;
+  listModels(provider?: string): Promise<ModelInfo[]>;
 }
 
 /** A clean, user-facing error with a hint on how to fix it. */
@@ -128,23 +136,33 @@ export function unsupportedParam(err: unknown): string | undefined {
   return candidates.find((p) => msg.includes(p) && (msg.includes("unsupported") || msg.includes("not support")));
 }
 
+export interface ConnectionOptions {
+  apiKey: string;
+  baseURL?: string;
+  organization?: string;
+  project?: string;
+  timeoutMs: number;
+  maxRetries: number;
+}
+
+/** Talks to ONE OpenAI-compatible endpoint (OpenAI itself, Gemini, Grok, ...). */
 export class OpenAIBackend implements ChatBackend {
   private readonly client: OpenAI;
 
   constructor(
-    config: BridgeConfig,
+    conn: ConnectionOptions | BridgeConfig,
     private readonly log: Logger,
     client?: OpenAI,
   ) {
     this.client =
       client ??
       new OpenAI({
-        apiKey: config.apiKey,
-        baseURL: config.baseURL,
-        organization: config.organization,
-        project: config.project,
-        timeout: config.timeoutMs,
-        maxRetries: config.maxRetries,
+        apiKey: conn.apiKey,
+        baseURL: conn.baseURL,
+        organization: conn.organization,
+        project: conn.project,
+        timeout: conn.timeoutMs,
+        maxRetries: conn.maxRetries,
       });
   }
 
@@ -228,4 +246,125 @@ export class OpenAIBackend implements ChatBackend {
       throw explainOpenAIError(err);
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Multi-provider router
+// ---------------------------------------------------------------------------
+
+/**
+ * Routes each request to the right provider and heals retired model names:
+ * if a provider's catalogue default model returns 404 (or no default exists,
+ * as with local servers), it lists that provider's models, picks the best
+ * match and remembers the choice for the rest of the session.
+ */
+export class RouterBackend implements ChatBackend {
+  private readonly backends = new Map<string, ChatBackend>();
+  private readonly resolvedModels = new Map<string, string>();
+
+  constructor(
+    private readonly config: BridgeConfig,
+    private readonly log: Logger,
+    factory?: (providerId: string) => ChatBackend,
+  ) {
+    for (const [id, p] of Object.entries(config.providers)) {
+      this.backends.set(
+        id,
+        factory
+          ? factory(id)
+          : new OpenAIBackend(
+              {
+                apiKey: p.apiKey,
+                baseURL: p.baseURL,
+                organization: id === "openai" ? config.organization : undefined,
+                project: id === "openai" ? config.project : undefined,
+                timeoutMs: config.timeoutMs,
+                maxRetries: config.maxRetries,
+              },
+              log,
+            ),
+      );
+    }
+  }
+
+  private backendFor(provider?: string): { id: string; backend: ChatBackend } {
+    const id = provider ?? this.config.defaultProvider;
+    const backend = this.backends.get(id);
+    if (!backend) throw notConfigured(id);
+    return { id, backend };
+  }
+
+  /** Pick a working model for a provider by asking it which models it has. */
+  private async autoModel(id: string, backend: ChatBackend): Promise<string> {
+    const cached = this.resolvedModels.get(id);
+    if (cached) return cached;
+    const def = this.config.providers[id].def;
+    const models = await backend.listModels();
+    const pick = pickModel(def, models.map((m) => m.id));
+    if (!pick) {
+      throw new BackendError(
+        `${def.name} returned no models.`,
+        undefined,
+        def.local ? `Install or load a model first (for Ollama: "ollama pull llama3.2").` : `Set ${def.id.toUpperCase()}_MODEL.`,
+      );
+    }
+    this.log.info(`Auto-selected model "${pick}" for ${def.name}`);
+    this.resolvedModels.set(id, pick);
+    return pick;
+  }
+
+  async chat(req: ChatRequest): Promise<ChatResult> {
+    const { id, backend } = this.backendFor(req.provider);
+    const pc = this.config.providers[id];
+    const isProviderDefault = req.model === pc.model && pc.modelIsDefault;
+    let model = req.model || this.resolvedModels.get(id) || "";
+    let auto = false;
+    if (!model) {
+      model = await this.autoModel(id, backend);
+      auto = true;
+    } else if (isProviderDefault && this.resolvedModels.has(id)) {
+      model = this.resolvedModels.get(id)!;
+      auto = true;
+    }
+    try {
+      const r = await backend.chat({ ...req, provider: id, model });
+      return { ...r, provider: id, autoSelectedModel: auto || undefined };
+    } catch (err) {
+      const status = (err as { status?: number }).status;
+      if (status === 404 && isProviderDefault && !auto) {
+        this.log.warn(`${pc.def.name} default model "${model}" is unavailable; picking another automatically`);
+        const picked = await this.autoModel(id, backend);
+        const r = await backend.chat({ ...req, provider: id, model: picked });
+        return { ...r, provider: id, autoSelectedModel: true };
+      }
+      throw err;
+    }
+  }
+
+  async generateImage(req: ImageRequest): Promise<ImageResult> {
+    const id = req.provider ?? (this.backends.has("openai") ? "openai" : this.config.defaultProvider);
+    const pc = this.config.providers[id];
+    if (pc && !pc.def.images) {
+      throw new BackendError(
+        `${pc.def.name} is not set up for image generation in this bridge.`,
+        undefined,
+        "Image generation uses OpenAI. Set OPENAI_API_KEY to enable it.",
+      );
+    }
+    const { backend } = this.backendFor(id);
+    return backend.generateImage({ ...req, provider: id });
+  }
+
+  async listModels(provider?: string): Promise<ModelInfo[]> {
+    return this.backendFor(provider).backend.listModels();
+  }
+}
+
+export function notConfigured(id: string): BackendError {
+  const def = findProvider(id);
+  if (!def) return new BackendError(`Unknown AI provider "${id}".`, undefined, "Run ai_list_providers to see the options.");
+  const how = def.local
+    ? `Set ${def.id.toUpperCase()}_ENABLED=true (and make sure ${def.name} is running).`
+    : `Add ${def.keyEnv[0]} to the bridge's environment (get a key at ${def.keyUrl}) and restart Claude.`;
+  return new BackendError(`${def.name} is not configured.`, undefined, how);
 }

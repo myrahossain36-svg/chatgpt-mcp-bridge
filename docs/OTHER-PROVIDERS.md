@@ -1,5 +1,7 @@
 # Using other OpenAI-compatible providers
 
+> **Most people want [PROVIDERS.md](PROVIDERS.md) instead.** Gemini, Grok, Claude, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, Groq, OpenRouter, Ollama and LM Studio are built in: just add their keys. This page covers pointing the *OpenAI* slot at a different server (for example Azure OpenAI or a company gateway).
+
 The bridge uses the OpenAI Chat Completions API format, which many providers and local tools also offer. Set `OPENAI_BASE_URL` (and a matching `OPENAI_MODEL`). Tool names stay `chatgpt_*` whichever model answers; the reply footer always shows the real model.
 
 ## OpenRouter (many models through one key)

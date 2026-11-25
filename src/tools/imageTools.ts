@@ -34,6 +34,7 @@ export function registerImageTools(server: McpServer, ctx: ToolContext): void {
       const model = args.model?.trim() || ctx.config.imageModel;
       assertModelAllowed(ctx.config, model);
       const res = await ctx.backend.generateImage({
+        provider: "openai",
         model,
         prompt: args.prompt,
         size: args.size,

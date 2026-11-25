@@ -8,6 +8,9 @@ describe("tool discovery", () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
     expect(names).toEqual([
+      "ai_ask",
+      "ai_list_providers",
+      "ai_panel",
       "chatgpt_ask",
       "chatgpt_code_review",
       "chatgpt_compare_models",
@@ -126,9 +129,10 @@ describe("conversation tools", () => {
 
     const list = await client.callTool({ name: "chatgpt_list_conversations", arguments: {} });
     expect(textOf(list)).toContain('rome: "Plan a trip to Rome"');
+    expect(textOf(list)).toContain("openai/gpt-5.6-sol");
 
     const show = await client.callTool({ name: "chatgpt_get_conversation", arguments: { conversation_id: "rome" } });
-    expect(textOf(show)).toContain("### ChatGPT");
+    expect(textOf(show)).toContain("### AI");
 
     const del = await client.callTool({ name: "chatgpt_reset_conversation", arguments: { conversation_id: "rome" } });
     expect(textOf(del)).toContain("Deleted");
@@ -215,8 +219,8 @@ describe("compare models", () => {
       arguments: { message: "hi", models: ["gpt-5.6-sol", "gpt-6.1-terra", "broken-model"] },
     });
     const text = textOf(res);
-    expect(text).toContain("Compared 3 model(s); 2 answered.");
-    expect(text).toContain("## gpt-6.1-terra");
+    expect(text).toContain("Asked 3 model(s); 2 answered.");
+    expect(text).toContain("(gpt-6.1-terra)");
     expect(text).toContain("FAILED: not found");
     expect(res.isError).toBeFalsy();
   });

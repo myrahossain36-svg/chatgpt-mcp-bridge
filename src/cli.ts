@@ -7,15 +7,17 @@ export interface CliArgs {
   host?: string;
   help: boolean;
   version: boolean;
+  providers: boolean;
 }
 
 export function parseArgs(argv: string[]): CliArgs {
-  const out: CliArgs = { http: false, help: false, version: false };
+  const out: CliArgs = { http: false, help: false, version: false, providers: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--http") out.http = true;
     else if (a === "--help" || a === "-h") out.help = true;
     else if (a === "--version" || a === "-v") out.version = true;
+    else if (a === "--providers") out.providers = true;
     else if (a === "--port") out.port = Number(argv[++i]);
     else if (a.startsWith("--port=")) out.port = Number(a.split("=")[1]);
     else if (a === "--host") out.host = argv[++i];

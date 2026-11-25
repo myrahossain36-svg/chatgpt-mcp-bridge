@@ -17,6 +17,8 @@ export interface Conversation {
   id: string;
   title: string;
   model: string;
+  /** Provider id the thread is with (older saved threads may not have one). */
+  provider?: string;
   systemPrompt?: string;
   messages: ChatMessage[];
   createdAt: string;
@@ -28,6 +30,7 @@ export interface ConversationSummary {
   id: string;
   title: string;
   model: string;
+  provider?: string;
   turns: number;
   createdAt: string;
   updatedAt: string;
@@ -67,7 +70,7 @@ export class ConversationStore {
   }
 
   /** Create a new conversation (optionally with a caller-chosen id). */
-  create(input: { id?: string; model: string; systemPrompt?: string; title?: string }): Conversation {
+  create(input: { id?: string; model: string; provider?: string; systemPrompt?: string; title?: string }): Conversation {
     const id = input.id ?? `conv_${randomUUID().slice(0, 8)}`;
     if (!isValidConversationId(id)) {
       throw new Error("conversation_id may only contain letters, numbers, '-' and '_' (max 64 chars).");
@@ -77,6 +80,7 @@ export class ConversationStore {
       id,
       title: input.title ?? "Untitled conversation",
       model: input.model,
+      provider: input.provider,
       systemPrompt: input.systemPrompt,
       messages: input.systemPrompt ? [{ role: "system", content: input.systemPrompt }] : [],
       createdAt: ts,
@@ -90,7 +94,7 @@ export class ConversationStore {
   }
 
   /** Get an existing conversation or create it. */
-  getOrCreate(input: { id?: string; model: string; systemPrompt?: string; title?: string }): {
+  getOrCreate(input: { id?: string; model: string; provider?: string; systemPrompt?: string; title?: string }): {
     conversation: Conversation;
     created: boolean;
   } {
@@ -102,12 +106,13 @@ export class ConversationStore {
   }
 
   /** Append messages after a successful exchange, then trim history. */
-  append(id: string, messages: ChatMessage[], tokens = 0, model?: string): Conversation {
+  append(id: string, messages: ChatMessage[], tokens = 0, model?: string, provider?: string): Conversation {
     const conv = this.items.get(id);
     if (!conv) throw new Error(`Conversation "${id}" not found`);
     conv.messages.push(...messages);
     conv.totalTokens += tokens;
     if (model) conv.model = model;
+    if (provider) conv.provider = provider;
     conv.updatedAt = new Date(this.now()).toISOString();
     if (conv.title === "Untitled conversation") {
       const firstUser = conv.messages.find((m) => m.role === "user");
@@ -142,6 +147,7 @@ export class ConversationStore {
         id: c.id,
         title: c.title,
         model: c.model,
+        provider: c.provider,
         turns: c.messages.filter((m) => m.role === "user").length,
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
