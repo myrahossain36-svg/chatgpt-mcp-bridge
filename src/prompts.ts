@@ -9,6 +9,58 @@ import type { ToolContext } from "./tools/shared.js";
 
 export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
+    "team_build",
+    {
+      title: "Build it with an AI team",
+      description: "Claude plans, an AI team critiques the plan, Claude builds, the team reviews the result.",
+      argsSchema: { goal: z.string().describe("What to build or change") },
+    },
+    ({ goal }) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text:
+              `Goal: ${goal}\n\n` +
+              "1. Write a short implementation plan.\n" +
+              "2. Call ai_team in review mode with your plan as the draft (members: two or three different configured AIs, " +
+              "roles such as planner, critic, security) and improve the plan.\n" +
+              "3. Implement the improved plan.\n" +
+              "4. Call ai_team in review mode again with your code as the draft (roles: reviewer, tester, security).\n" +
+              "5. Apply the fixes you agree with and tell me which AI caught what.",
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
+    "team_write",
+    {
+      title: "Write it with an AI team",
+      description: "A researcher, a writer and an editor (different AIs) produce a document; Claude checks it.",
+      argsSchema: {
+        brief: z.string().describe("What to write, for whom and why"),
+      },
+    },
+    ({ brief }) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text:
+              `Brief: ${brief}\n\n` +
+              "Call ai_team in pipeline mode with three different configured AIs as researcher, writer and editor. " +
+              "Then check the result yourself for accuracy and tone, fix anything wrong, and give me the final version.",
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
     "cross_check",
     {
       title: "Cross-check with ChatGPT",

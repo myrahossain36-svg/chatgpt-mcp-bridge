@@ -46,6 +46,25 @@ AIs that are not configured, or that fail, are reported in their own section wit
 
 ---
 
+## `ai_team`
+
+Several AIs work together on a task with roles. Full guide: [TEAMWORK.md](TEAMWORK.md).
+
+| Input | Required | Notes |
+| --- | --- | --- |
+| `task` | yes | What to produce or decide. |
+| `members` | yes | 2 to 6 of `{ provider, role?, model? }`. In review mode the first is the author. |
+| `mode` | no | `review` (default), `discussion` or `pipeline`. |
+| `rounds` | no | 1 to 3 (default 2). Review stops early when all reviewers approve. |
+| `draft` | no | Review mode: an existing draft (e.g. Claude's) for the team to improve. |
+| `context` | no | Background for the whole team. |
+| `files` | no | Text/code files to share (from `ALLOWED_FILE_DIRS` only). |
+| `team_id` | no | Save the session; reuse to continue from the last result. |
+
+Returns the final result, who produced it, and a transcript of every contribution. Structured output includes `final`, `final_by`, `calls`, `tokens` and each `turn`.
+
+---
+
 ## `ai_list_providers`
 
 Shows all 15 providers, which are switched on (with their default models), and the exact setting that switches each of the others on. Never shows keys.
@@ -61,6 +80,7 @@ Send a message to ChatGPT.
 | `message` | yes | Everything ChatGPT needs. It cannot see the Claude conversation. |
 | `conversation_id` | no | Reuse to continue a thread. Letters, numbers, `-`, `_`; max 64 chars. Omit for a one-off question. |
 | `system_prompt` | no | Role or style instructions. Applied only when a thread starts. Falls back to `DEFAULT_SYSTEM_PROMPT`. |
+| `files` | no | Paths of text/code files to attach (only inside `ALLOWED_FILE_DIRS`). |
 
 **One-off example**
 

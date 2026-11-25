@@ -1,7 +1,7 @@
 {
   "name": "chatgpt-mcp-bridge",
-  "version": "1.1.0",
-  "description": "An MCP server that connects Claude to ChatGPT, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity and more: ask any AI, run multi-AI panels, get second opinions and code reviews, compare models and generate images, all from inside Claude.",
+  "version": "1.2.0",
+  "description": "An MCP server that connects Claude to ChatGPT, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity and more: ask any AI, run AI teams and multi-AI panels, get second opinions and code reviews, compare models and generate images, all from inside Claude.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

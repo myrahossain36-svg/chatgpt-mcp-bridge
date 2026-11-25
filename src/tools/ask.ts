@@ -8,6 +8,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ChatMessage, ReasoningEffort } from "../backend.js";
+import { buildFileContext } from "../files.js";
 import { footer, modelOptions, resolveTarget, safe, textResult, type ToolContext } from "./shared.js";
 
 interface AskArgs {
@@ -19,11 +20,17 @@ interface AskArgs {
   temperature?: number;
   max_output_tokens?: number;
   reasoning_effort?: ReasoningEffort;
+  files?: string[];
 }
 
 export async function handleAsk(ctx: ToolContext, args: AskArgs): Promise<CallToolResult> {
   const systemPrompt = args.system_prompt ?? ctx.config.defaultSystemPrompt;
-  const userMsg: ChatMessage = { role: "user", content: args.message };
+  const fileBlock = buildFileContext(args.files, {
+    allowedDirs: ctx.config.allowedFileDirs,
+    maxFileBytes: ctx.config.maxFileBytes,
+    maxTotalBytes: ctx.config.maxTotalFileBytes,
+  });
+  const userMsg: ChatMessage = { role: "user", content: args.message + fileBlock };
   const common = {
     temperature: args.temperature,
     maxOutputTokens: args.max_output_tokens ?? ctx.config.maxOutputTokens,
@@ -101,6 +108,11 @@ const sharedInputs = {
     .string()
     .optional()
     .describe("Optional instructions for the AI's role or style. Only applied when a conversation starts."),
+  files: z
+    .array(z.string())
+    .max(20)
+    .optional()
+    .describe("Optional paths of text/code files to share with the AI (only inside ALLOWED_FILE_DIRS)."),
 };
 
 export function registerAskTool(server: McpServer, ctx: ToolContext): void {

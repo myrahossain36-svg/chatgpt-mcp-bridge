@@ -11,6 +11,7 @@ describe("tool discovery", () => {
       "ai_ask",
       "ai_list_providers",
       "ai_panel",
+      "ai_team",
       "chatgpt_ask",
       "chatgpt_code_review",
       "chatgpt_compare_models",
@@ -30,7 +31,7 @@ describe("tool discovery", () => {
   it("exposes prompts", async () => {
     const { client } = await connectTestClient();
     const { prompts } = await client.listPrompts();
-    expect(prompts.map((p) => p.name).sort()).toEqual(["council", "cross_check", "review_my_code"]);
+    expect(prompts.map((p) => p.name).sort()).toEqual(["council", "cross_check", "review_my_code", "team_build", "team_write"]);
     const p = await client.getPrompt({ name: "cross_check", arguments: { question: "Is 2+2=4?" } });
     expect(JSON.stringify(p.messages)).toContain("chatgpt_second_opinion");
   });

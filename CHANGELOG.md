@@ -4,6 +4,16 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-25
+
+### Added
+
+- `ai_team`: several AIs work together with Claude in charge. Review loop (author, reviewers, revisions, early stop on approval, can improve Claude's own draft), discussion (members read and respond to each other) and pipeline (each role builds on the last). 13 built-in roles plus custom roles. Sessions can be saved and continued with `team_id`.
+- Safe file sharing (`files` on `chatgpt_ask`, `ai_ask` and `ai_team`), limited to `ALLOWED_FILE_DIRS`, text files only, with size limits and symlink protection.
+- `MAX_TEAM_CALLS` cost guard.
+- Prompts `team_build` and `team_write`.
+- Guide: docs/TEAMWORK.md.
+
 ## [1.1.0] - 2026-11-25
 
 ### Added

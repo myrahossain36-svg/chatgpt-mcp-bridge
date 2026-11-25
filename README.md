@@ -7,7 +7,7 @@
 
 <p align="center">
   <b>Give Claude a phone line to every major AI.</b><br>
-  ChatGPT, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, Claude itself and local models: ask any of them, run an AI panel, get second opinions and code reviews, compare models side by side and generate images, all without leaving Claude.
+  ChatGPT, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, Claude itself and local models: ask any of them, make them work together as a team with Claude, run AI panels, get second opinions and code reviews, compare models and generate images, all without leaving Claude.
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/MCP-compatible-7c3aed" alt="MCP compatible">
   <img src="https://img.shields.io/badge/AI%20providers-15-f59e0b" alt="15 AI providers">
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen" alt="Node 20+">
-  <img src="https://img.shields.io/badge/tests-61%20passing-success" alt="61 tests">
+  <img src="https://img.shields.io/badge/tests-73%20passing-success" alt="73 tests">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT licence"></a>
 </p>
 
@@ -24,6 +24,7 @@
   <a href="#quick-start-claude-code">Claude Code</a> ·
   <a href="#remote--claudeai-connector-http-mode">claude.ai / remote</a> ·
   <a href="docs/PROVIDERS.md">15 AI providers</a> ·
+  <a href="docs/TEAMWORK.md">AI teams</a> ·
   <a href="docs/TOOLS.md">Tool reference</a> ·
   <a href="docs/TROUBLESHOOTING.md">Troubleshooting</a>
 </p>
@@ -37,6 +38,18 @@ claude mcp add ai-bridge --scope user -e OPENAI_API_KEY=sk-... -e GEMINI_API_KEY
 ### Why more than one AI?
 
 Different models make different mistakes. Letting Claude consult ChatGPT, Gemini, Grok and the rest gives you a built-in cross-check: Claude drafts, the others challenge, Claude reconciles, and you see where they agree and where they do not. It is also the quickest way to try every major model on your real work without switching apps.
+
+### AI teams that work with Claude
+
+`ai_team` makes the AIs work together on your task, with Claude in charge:
+
+- **Review loop:** one AI writes (or Claude hands over its own draft), the others review, the draft improves round after round until they all approve.
+- **Discussion:** they answer, read each other's answers, and refine their positions.
+- **Pipeline:** researcher, writer, editor (or planner, coder, tester) pass the work along.
+
+Give each member a role (`coder`, `reviewer`, `security`, `tester`, `researcher`, `writer`, `editor`, `critic` and more, or your own), share code and documents from folders you approve, and save the session to continue later. Guide: [docs/TEAMWORK.md](docs/TEAMWORK.md).
+
+> *"Write the login handler, then run an AI team review: ChatGPT as reviewer, Grok as security, Gemini as tester."*
 
 ### Every major AI, one bridge
 
@@ -95,6 +108,7 @@ Once installed, just talk to Claude normally:
 | "Generate an image of a lighthouse at dawn with OpenAI." | `chatgpt_generate_image` returns the image right in the chat. |
 | "Ask Gemini what it thinks of this contract clause." | `ai_ask` with `provider: "gemini"` sends it to Google Gemini. |
 | "Run an AI panel: is this business plan realistic?" | `ai_panel` asks every AI you have switched on at once, then Claude summarises where they agree. |
+| "Draft this reply, then have an AI team improve it: ChatGPT as editor, Gemini as critic." | `ai_team` in review mode: the team critiques Claude's draft and revises it until they approve. |
 | "Compare ChatGPT, Grok and DeepSeek on this puzzle." | `chatgpt_compare_models` runs them in parallel and shows the answers side by side. |
 | "Which ChatGPT models can I use?" | `chatgpt_list_models` lists the models your key can access. |
 
@@ -102,14 +116,16 @@ Features at a glance:
 
 - 15 AI providers: ChatGPT, Claude, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, Groq, OpenRouter, Ollama, LM Studio
 - Automatic model fallback when a provider retires a model name
-- 15 tools, 3 ready-made prompts, and conversation threads exposed as MCP resources
+- AI teams with roles: review loops, discussions and pipelines, with Claude in charge
+- Safe file sharing from folders you approve
+- 16 tools, 5 ready-made prompts, and conversation threads exposed as MCP resources
 - Multi-turn memory per `conversation_id`, with optional saving to disk
 - Works with any OpenAI-compatible API (Azure OpenAI, OpenRouter, Ollama, LM Studio, vLLM)
 - Automatic retries, timeouts, and clear "how to fix" messages for every common error
 - Copes with models that reject `temperature` or other settings (drops them and retries)
 - Optional model allow-list to control cost
 - Two transports: **stdio** (local) and **Streamable HTTP** (remote, with bearer-token auth)
-- Dockerfile, Docker Compose file, GitHub Actions CI and 61 automated tests
+- Dockerfile, Docker Compose file, GitHub Actions CI and 73 automated tests
 - API keys are never logged or returned by any tool
 
 ---
@@ -219,7 +235,7 @@ Quit Claude Desktop **completely** (macOS: `Cmd+Q`; Windows: right-click the tra
 
 ### Step 5: Try it
 
-Start a new chat and click the tools/connectors icon. You should see **ai-bridge** with 15 tools. Then type:
+Start a new chat and click the tools/connectors icon. You should see **ai-bridge** with 16 tools. Then type:
 
 > Use chatgpt_server_info to check the ChatGPT bridge, then ask ChatGPT to tell me a fun fact about octopuses.
 
@@ -293,6 +309,7 @@ Step-by-step hosting instructions, including the security trade-offs of putting 
 | `chatgpt_ask` | Send ChatGPT (the default AI) a message. Reuse a `conversation_id` for multi-turn chat. | `message`, `conversation_id?`, `system_prompt?`, `provider?`, `model?` |
 | `ai_ask` | Ask a specific AI by name: Gemini, Grok, Claude, DeepSeek, and so on. | `provider`, `message`, `conversation_id?` |
 | `ai_panel` | Ask every configured AI (or a chosen list) the same question at once. | `message`, `providers?[]` |
+| `ai_team` | Several AIs work together with roles: review loop, discussion or pipeline. Can improve Claude's own draft. | `task`, `members[]`, `mode?`, `rounds?`, `draft?`, `files?`, `team_id?` |
 | `ai_list_providers` | Which AIs are switched on, and how to switch on the rest. | none |
 | `chatgpt_second_opinion` | Critical review of an answer, plan or draft. Verdict, what is right, what is wrong, better answer. | `question`, `answer`, `focus?` |
 | `chatgpt_code_review` | Code review with severity ratings and concrete fixes. | `code`, `language?`, `context?`, `focus?[]` |
@@ -314,11 +331,13 @@ Full reference with example calls and outputs: [docs/TOOLS.md](docs/TOOLS.md).
 
 ## Built-in prompts
 
-The bridge ships three MCP prompts that appear in Claude's prompt menu (in Claude Code they appear as slash commands such as `/mcp__ai-bridge__cross_check`):
+The bridge ships five MCP prompts that appear in Claude's prompt menu (in Claude Code they appear as slash commands such as `/mcp__ai-bridge__cross_check`):
 
 - **`cross_check`**: Claude answers, another AI reviews, Claude reconciles.
 - **`council`**: Claude and another AI each propose an approach independently, then Claude merges them.
 - **`review_my_code`**: both models review the same code and the findings are merged.
+- **`team_build`**: Claude plans, an AI team critiques the plan, Claude builds, the team reviews the code.
+- **`team_write`**: a researcher, writer and editor (three different AIs) produce a document, then Claude checks it.
 
 ---
 
@@ -344,6 +363,9 @@ All settings are environment variables. Put them in the `"env"` block of your Cl
 | `CONVERSATION_TTL_MINUTES` | `1440` | Idle threads are forgotten after this long. |
 | `CONVERSATION_STORE_PATH` | *(memory)* | JSON file to keep threads across restarts. |
 | `IMAGE_OUTPUT_DIR` | *(off)* | Also save generated images to this folder. |
+| `ALLOWED_FILE_DIRS` | *(off)* | Folders the AIs may read files from. File sharing is off until set. |
+| `MAX_FILE_BYTES` / `MAX_TOTAL_FILE_BYTES` | `200000` / `600000` | Size limits for shared files. |
+| `MAX_TEAM_CALLS` | `20` | Most AI calls one `ai_team` session may make. |
 | `DEFAULT_SYSTEM_PROMPT` | | Instructions applied to every `chatgpt_ask` call. |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` or `silent`. Logs go to stderr. |
 | `HOST` / `PORT` | `127.0.0.1` / `3000` | HTTP mode address. |
@@ -426,7 +448,7 @@ Report vulnerabilities as described in [SECURITY.md](SECURITY.md).
 npm install          # install and build
 npm run dev          # run from source (stdio) with tsx
 npm run dev:http     # run from source in HTTP mode
-npm test             # 61 tests, no API key or network needed
+npm test             # 73 tests, no API key or network needed
 npm run typecheck
 npm run build
 npm run inspect      # open the MCP Inspector against dist/index.js
@@ -440,6 +462,7 @@ src/
   cli.ts                argument parsing
   config.ts             environment variable loading and validation
   providers.ts          the catalogue of 15 AI providers
+  files.ts              safe file sharing (allow-listed folders only)
   backend.ts            OpenAI-compatible client, multi-provider router, model fallback
   conversations.ts      multi-turn thread store (memory or JSON file)
   server.ts             builds the MCP server and registers everything

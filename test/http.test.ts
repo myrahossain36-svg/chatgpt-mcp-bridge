@@ -34,7 +34,7 @@ describe("HTTP transport", () => {
     const client = new Client({ name: "http-test", version: "1.0.0" });
     await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`)));
     const { tools } = await client.listTools();
-    expect(tools.length).toBe(15);
+    expect(tools.length).toBe(16);
     await client.callTool({ name: "chatgpt_ask", arguments: { message: "one", conversation_id: "h1" } });
     const list = await client.callTool({ name: "chatgpt_list_conversations", arguments: {} });
     expect(textOf(list)).toContain("h1");
@@ -57,7 +57,7 @@ describe("HTTP transport", () => {
       }),
     );
     const { tools } = await client.listTools();
-    expect(tools.length).toBe(15);
+    expect(tools.length).toBe(16);
     await client.close();
   });
 

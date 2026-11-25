@@ -60,6 +60,14 @@ export interface BridgeConfig {
   imageOutputDir?: string;
   /** Default system prompt applied to every ChatGPT call (can be overridden per call). */
   defaultSystemPrompt?: string;
+  /** Folders the AIs may read files from (file sharing is off when empty). */
+  allowedFileDirs: string[];
+  /** Largest single file that may be shared, in bytes. */
+  maxFileBytes: number;
+  /** Largest total of shared files per request, in bytes. */
+  maxTotalFileBytes: number;
+  /** Upper limit on AI calls made by one ai_team session. */
+  maxTeamCalls: number;
   /** Log level (logs always go to stderr, never stdout). */
   logLevel: LogLevel;
   /** HTTP transport settings. */
@@ -205,6 +213,10 @@ export function loadConfig(env: Env = process.env, opts: { requireApiKey?: boole
     conversationStorePath: str(env, "CONVERSATION_STORE_PATH"),
     imageOutputDir: str(env, "IMAGE_OUTPUT_DIR"),
     defaultSystemPrompt: str(env, "DEFAULT_SYSTEM_PROMPT"),
+    allowedFileDirs: list(env, "ALLOWED_FILE_DIRS"),
+    maxFileBytes: int(env, "MAX_FILE_BYTES", 200_000, 1),
+    maxTotalFileBytes: int(env, "MAX_TOTAL_FILE_BYTES", 600_000, 1),
+    maxTeamCalls: int(env, "MAX_TEAM_CALLS", 20, 1),
     logLevel: logLevelRaw,
     http: {
       host: str(env, "HOST") ?? DEFAULTS.httpHost,
