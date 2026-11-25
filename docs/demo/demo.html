@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; overflow: hidden; background: #0f172a; font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .scene { position: absolute; inset: 0; display: none; }
+  /* ---------- title + end cards ---------- */
+  .card-bg { background: radial-gradient(1200px 600px at 50% 40%, #1e293b 0%, #0f172a 70%); }
+  .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .orbs { position: relative; width: 760px; height: 170px; margin-bottom: 36px; }
+  .orb { position: absolute; top: 15px; width: 140px; height: 140px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 25px; color: #0f172a; }
+  .orb.c { left: 0; background: #f59e0b; box-shadow: 0 0 60px #f59e0b66; }
+  .orb.g { right: 0; background: #10b981; box-shadow: 0 0 60px #10b98166; }
+  .beam { position: absolute; top: 80px; left: 150px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #f59e0b, #10b981); }
+  .pulse { position: absolute; top: 76px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 0 20px #fff; }
+  .hub { position: absolute; left: 310px; top: 45px; width: 140px; height: 80px; border-radius: 16px; background: #0f172a; border: 2px solid #e2e8f0; color: #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; }
+  .hub small { font-weight: 500; font-size: 14px; color: #94a3b8; }
+  h1.big { color: #f8fafc; font-size: 64px; font-weight: 800; letter-spacing: -1.5px; }
+  p.sub { color: #cbd5e1; font-size: 26px; margin-top: 14px; }
+  .term { margin-top: 34px; width: 980px; background: #020617; border: 1px solid #334155; border-radius: 14px; padding: 22px 26px; font-family: "DejaVu Sans Mono", monospace; font-size: 17px; color: #e2e8f0; line-height: 1.5; min-height: 92px; }
+  .term .p { color: #10b981; }
+  .caret { display: inline-block; width: 10px; height: 20px; background: #e2e8f0; vertical-align: -3px; margin-left: 2px; }
+  .url { margin-top: 28px; font-size: 24px; color: #f8fafc; font-weight: 600; }
+  .star { margin-top: 18px; display: inline-flex; gap: 10px; align-items: center; padding: 12px 22px; border-radius: 999px; background: #f8fafc; color: #0f172a; font-weight: 700; font-size: 20px; }
+  .note { position: absolute; bottom: 18px; width: 100%; text-align: center; color: #64748b; font-size: 14px; }
+
+  /* ---------- chat scene ---------- */
+  #chat { background: #e8e4dc; }
+  .window { position: absolute; left: 90px; top: 34px; width: 1100px; height: 652px; background: #faf9f6; border-radius: 16px; box-shadow: 0 30px 80px #0000004d, 0 0 0 1px #00000014; overflow: hidden; }
+  .bar { height: 46px; display: flex; align-items: center; padding: 0 18px; border-bottom: 1px solid #e7e3da; background: #f4f2ec; }
+  .dots span { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 7px; }
+  .bar .title { flex: 1; text-align: center; font-size: 14px; color: #57534e; font-weight: 600; margin-right: 60px; }
+  .chip { font-size: 12.5px; padding: 5px 10px; border-radius: 999px; background: #e7f6ef; color: #047857; font-weight: 600; border: 1px solid #b7e4cf; }
+  .chip i { display: inline-block; width: 7px; height: 7px; background: #10b981; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .feed { position: absolute; top: 46px; bottom: 96px; left: 0; right: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 150px 14px; }
+  .msg { margin-top: 18px; transform-origin: bottom; flex-shrink: 0; }
+  .user { align-self: flex-end; max-width: 620px; background: #ebe7df; color: #1c1917; padding: 13px 18px; border-radius: 18px 18px 4px 18px; font-size: 16.5px; line-height: 1.5; }
+  .asst { display: flex; gap: 14px; font-size: 16.5px; line-height: 1.6; color: #1c1917; }
+  .av { flex: none; width: 30px; height: 30px; border-radius: 9px; background: #d97706; color: #fff; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .asst .body { flex: 1; }
+  .asst b { font-weight: 650; }
+  .thinking span { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #a8a29e; margin-right: 5px; }
+  .tool { margin-left: 44px; border: 1px solid #e2ddd2; background: #fff; border-radius: 12px; overflow: hidden; font-size: 14.5px; }
+  .tool .head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; color: #44403c; }
+  .tool .head code { font-family: "DejaVu Sans Mono", monospace; font-size: 13.5px; background: #f5f3ee; padding: 2px 7px; border-radius: 6px; color: #1c1917; }
+  .tool .head .right { margin-left: auto; color: #78716c; font-size: 13px; }
+  .spin { width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid #d6d3d1; border-top-color: #10b981; }
+  .tick { width: 18px; height: 18px; border-radius: 50%; background: #10b981; color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+  .args { border-top: 1px solid #f0ece4; padding: 9px 14px; font-family: "DejaVu Sans Mono", monospace; font-size: 12.5px; color: #78716c; background: #fcfbf8; }
+  .result { border-top: 1px solid #f0ece4; padding: 12px 16px 12px; background: #f3fbf7; color: #1c1917; font-size: 15px; line-height: 1.55; }
+  .result .lbl { font-size: 12px; font-weight: 700; color: #047857; letter-spacing: .4px; text-transform: uppercase; margin-bottom: 4px; }
+  .result .foot { margin-top: 8px; font-family: "DejaVu Sans Mono", monospace; font-size: 11.5px; color: #78716c; }
+  .agree { display: inline-block; margin-bottom: 6px; font-size: 12.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #e7f6ef; color: #047857; }
+  .perm { position: absolute; left: 50%; top: 50%; width: 460px; transform: translate(-50%, -50%); background: #fff; border-radius: 14px; box-shadow: 0 20px 60px #0000003a, 0 0 0 1px #00000012; padding: 22px 24px; z-index: 5; }
+  .perm h3 { font-size: 17px; color: #1c1917; margin-bottom: 6px; }
+  .perm p { font-size: 14px; color: #57534e; line-height: 1.5; }
+  .perm .btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .btn { font-size: 14px; font-weight: 600; padding: 9px 16px; border-radius: 9px; border: 1px solid #d6d3d1; color: #44403c; background: #fff; }
+  .btn.pri { background: #1c1917; color: #fff; border-color: #1c1917; }
+  .shade { position: absolute; inset: 0; background: #1c19172e; z-index: 4; }
+  .composer { position: absolute; left: 150px; right: 150px; bottom: 22px; min-height: 58px; border: 1px solid #ddd8ce; background: #fff; border-radius: 16px; display: flex; align-items: center; padding: 0 12px 0 18px; font-size: 16.5px; color: #1c1917; box-shadow: 0 2px 10px #0000000a; }
+  .composer .ph { color: #a8a29e; }
+  .composer .txt { flex: 1; line-height: 1.45; padding: 12px 0; }
+  .send { flex: none; width: 36px; height: 36px; border-radius: 10px; background: #d97706; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
+  .cursor { position: absolute; width: 26px; height: 26px; z-index: 10; pointer-events: none; }
+  .ripple { position: absolute; border-radius: 50%; border: 2px solid #d97706; z-index: 9; }
+  .fade { position: absolute; inset: 0; background: #0f172a; z-index: 20; pointer-events: none; }
+  .caption { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; display: flex; align-items: center; justify-content: center; color: #57534e; font-size: 13px; z-index: 3; }
+</style>
+</head>
+<body>
+
+<!-- ============ SCENE 1: TITLE ============ -->
+<div class="scene card-bg" id="title">
+  <div class="center">
+    <div class="orbs">
+      <div class="beam" id="beam"></div>
+      <div class="pulse" id="p1"></div><div class="pulse" id="p2"></div>
+      <div class="orb c" id="oc">Claude</div>
+      <div class="hub" id="hub">MCP<small>bridge</small></div>
+      <div class="orb g" id="og">ChatGPT</div>
+    </div>
+    <h1 class="big" id="t1">ChatGPT MCP Bridge</h1>
+    <p class="sub" id="t2">Give Claude a phone line to ChatGPT.</p>
+  </div>
+  <div class="fade" id="f1"></div>
+</div>
+
+<!-- ============ SCENE 2: CHAT ============ -->
+<div class="scene" id="chat">
+  <div class="window">
+    <div class="bar">
+      <div class="dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
+      <div class="title">API key safety check</div>
+      <div class="chip"><i></i>chatgpt · 12 tools</div>
+    </div>
+    <div class="feed" id="feed"></div>
+    <div class="composer"><div class="txt" id="comp"></div><div class="send" id="send">↑</div></div>
+    <div class="shade" id="shade"></div>
+    <div class="perm" id="perm">
+      <h3>Allow Claude to use a tool from “chatgpt”?</h3>
+      <p><b>chatgpt_second_opinion</b>: sends the question and Claude’s draft answer to ChatGPT for review.</p>
+      <div class="btns"><div class="btn">Deny</div><div class="btn pri" id="allow">Allow</div></div>
+    </div>
+  </div>
+  <div class="caption">Illustrative session. Your replies will vary with the model.</div>
+  <svg class="cursor" id="cur" viewBox="0 0 24 24"><path d="M4 2 L4 19 L8.5 15 L11.5 22 L14.5 20.7 L11.6 14 L18 14 Z" fill="#111" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  <div class="ripple" id="rip"></div>
+  <div class="fade" id="f2"></div>
+</div>
+
+<!-- ============ SCENE 3: END ============ -->
+<div class="scene card-bg" id="end">
+  <div class="center">
+    <h1 class="big" id="e1" style="font-size:54px">Second opinions in one sentence.</h1>
+    <p class="sub" id="e2">12 tools · Claude Desktop · Claude Code · claude.ai</p>
+    <div class="term" id="term"></div>
+    <div class="url" id="e3">github.com/myrahossain36-svg/chatgpt-mcp-bridge</div>
+    <div class="star" id="e4">★ Star it on GitHub</div>
+  </div>
+  <div class="note">Open source · MIT licence · Not affiliated with OpenAI or Anthropic</div>
+  <div class="fade" id="f3"></div>
+</div>
+
+<script>
+// ---------- helpers ----------
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const prog = (t, s, d) => clamp((t - s) / d);
+const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const back = (x) => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const typed = (text, t, s, cps) => text.slice(0, Math.floor(clamp((t - s) * cps, 0, text.length)));
+// stream by words, like a model reply
+function streamed(html, t, s, wps) {
+  const words = html.split(/(\s+)/);
+  const total = Math.ceil(words.length / 2);
+  const n = Math.floor(clamp((t - s) * wps, 0, total));
+  return words.slice(0, n * 2).join("");
+}
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+// ---------- content ----------
+const USER = "Is it OK to keep our OpenAI API key in a .env file in the repo? Get ChatGPT's second opinion too.";
+const CLAUDE1 = "Keeping the key in a <b>.env</b> file is fine, but that file must never be committed. Add <b>.env</b> to <b>.gitignore</b>, commit a <b>.env.example</b> with placeholders instead, and load the real key from a secrets manager in production. Let me check this with ChatGPT.";
+const GPT = "<b>Verdict: Agree.</b> One addition: if the key was <i>ever</i> committed, treat it as leaked and rotate it now. Deleting the file does not remove it from git history. Also turn on GitHub secret scanning and push protection.";
+const CLAUDE2 = "Both models agree on the core advice, and ChatGPT caught a point I left out. Final checklist: <b>1.</b> If the key was ever committed, rotate it today. <b>2.</b> Add <b>.env</b> to <b>.gitignore</b> and share a <b>.env.example</b>. <b>3.</b> Enable secret scanning so it cannot happen again.";
+const INSTALL = "claude mcp add chatgpt -e OPENAI_API_KEY=sk-... -- npx -y github:myrahossain36-svg/chatgpt-mcp-bridge";
+
+// ---------- scene durations (seconds) ----------
+window.SCENES = { title: 3.5, chat: 27, end: 6 };
+
+function show(id) { for (const s of ["title", "chat", "end"]) $(s).style.display = s === id ? "block" : "none"; }
+
+function renderTitle(t) {
+  show("title");
+  const a = easeOut(prog(t, 0.1, 0.8));
+  $("oc").style.transform = `translateX(${(1 - a) * -80}px) scale(${0.6 + 0.4 * back(prog(t, 0.1, 0.8))})`;
+  $("og").style.transform = `translateX(${(1 - a) * 80}px) scale(${0.6 + 0.4 * back(prog(t, 0.25, 0.8))})`;
+  $("oc").style.opacity = $("og").style.opacity = a;
+  const b = easeInOut(prog(t, 0.7, 0.8));
+  $("beam").style.width = `${460 * b}px`;
+  $("hub").style.opacity = easeOut(prog(t, 1.1, 0.4));
+  $("hub").style.transform = `scale(${0.7 + 0.3 * back(prog(t, 1.1, 0.5))})`;
+  const cyc = (t - 1.5) / 1.1;
+  for (const [id, off] of [["p1", 0], ["p2", 0.5]]) {
+    const x = ((cyc + off) % 1 + 1) % 1;
+    $(id).style.left = `${150 + 442 * x}px`;
+    $(id).style.opacity = t > 1.5 ? Math.sin(x * Math.PI) : 0;
+  }
+  $("t1").style.opacity = easeOut(prog(t, 1.2, 0.6));
+  $("t1").style.transform = `translateY(${(1 - easeOut(prog(t, 1.2, 0.6))) * 24}px)`;
+  $("t2").style.opacity = easeOut(prog(t, 1.6, 0.6));
+  $("t2").style.transform = `translateY(${(1 - easeOut(prog(t, 1.6, 0.6))) * 18}px)`;
+  $("f1").style.opacity = 1 - prog(t, 0, 0.4) + prog(t, 3.1, 0.4);
+}
+
+// Chat timeline (seconds from scene start)
+const T = {
+  typeStart: 0.9, cps: 34,             // user typing
+  send: 4.2,                           // click send
+  think: 4.6, c1: 5.4, c1wps: 12,      // claude streams
+  tool: 9.9,                           // tool card
+  perm: 10.4, allow: 11.9,             // permission dialog
+  done: 14.1,                          // tool returns
+  gpt: 14.3, gptwps: 12,
+  c2: 18.6, c2wps: 11,
+};
+
+function cursorPos(t) {
+  // keyframes: [time, x, y]
+  const k = [[0, 880, 760], [3.4, 880, 760], [4.1, 1080, 657], [4.5, 1080, 657], [6, 980, 560], [11.0, 980, 560], [11.7, 807, 405], [12.3, 807, 405], [13.5, 1000, 700], [99, 1000, 700]];
+  for (let i = 0; i < k.length - 1; i++) {
+    const [t0, x0, y0] = k[i], [t1, x1, y1] = k[i + 1];
+    if (t >= t0 && t <= t1) { const e = easeInOut((t - t0) / (t1 - t0)); return [x0 + (x1 - x0) * e, y0 + (y1 - y0) * e]; }
+  }
+  return [1000, 700];
+}
+
+function block(cls, inner, appear, t, extra = "") {
+  const a = easeOut(prog(t, appear, 0.35));
+  return `<div class="msg ${cls}" style="opacity:${a};transform:translateY(${(1 - a) * 14}px) scale(${0.98 + 0.02 * a});${extra}">${inner}</div>`;
+}
+
+function renderChat(t) {
+  show("chat");
+  let html = "";
+  // composer
+  if (t < T.send) {
+    const s = typed(USER, t, T.typeStart, T.cps);
+    $("comp").innerHTML = s ? esc(s) + (Math.floor(t * 2) % 2 ? "" : '<span class="caret" style="height:18px;width:2px;background:#1c1917"></span>') : '<span class="ph">Reply to Claude...</span>';
+  } else $("comp").innerHTML = '<span class="ph">Reply to Claude...</span>';
+
+  if (t >= T.send) html += block("user", esc(USER), T.send, t);
+  if (t >= T.think) {
+    let body;
+    if (t < T.c1) body = `<div class="thinking">${[0, 1, 2].map((i) => `<span style="opacity:${0.35 + 0.65 * Math.abs(Math.sin((t * 3 - i * 0.35) * Math.PI / 2))}"></span>`).join("")}</div>`;
+    else body = streamed(CLAUDE1, t, T.c1, T.c1wps);
+    html += block("asst", `<div class="av">C</div><div class="body">${body}</div>`, T.think, t);
+  }
+  if (t >= T.tool) {
+    const running = t < T.done;
+    const icon = running ? `<div class="spin" style="transform:rotate(${t * 400}deg)"></div>` : `<div class="tick" style="transform:scale(${back(prog(t, T.done, 0.35))})">✓</div>`;
+    const status = t < T.allow ? "waiting for approval" : running ? `asking gpt-5.6-sol... ${(t - T.allow).toFixed(1)}s` : "done · 2.2s";
+    let inner = `<div class="head">${icon}<span>ChatGPT Bridge</span><code>chatgpt_second_opinion</code><span class="right">${status}</span></div>`;
+    inner += `<div class="args">{ "question": "Is it OK to keep our API key in a .env file…", "answer": "Keeping the key in…", "focus": "security" }</div>`;
+    if (t >= T.gpt) {
+      const g = streamed(GPT, t, T.gpt, T.gptwps);
+      const full = t > T.gpt + GPT.split(/\s+/).length / T.gptwps;
+      inner += `<div class="result" style="opacity:${easeOut(prog(t, T.gpt, 0.3))}"><div class="lbl">ChatGPT says</div>${g}${full ? `<div class="foot" style="opacity:${prog(t, T.gpt + GPT.split(/\s+/).length / T.gptwps, 0.4)}">[model: gpt-5.6-sol | tokens: 318 in / 74 out]</div>` : ""}</div>`;
+    }
+    html += block("tool", inner, T.tool, t);
+  }
+  if (t >= T.c2) {
+    const body = `<span class="agree" style="opacity:${easeOut(prog(t, T.c2, 0.4))}">✓ Claude and ChatGPT agree</span><br>` + streamed(CLAUDE2, t, T.c2 + 0.5, T.c2wps);
+    html += block("asst", `<div class="av">C</div><div class="body">${body}</div>`, T.c2, t);
+  }
+  $("feed").innerHTML = html;
+
+  // permission dialog
+  const pin = easeOut(prog(t, T.perm, 0.3)), pout = prog(t, T.allow + 0.15, 0.25);
+  const pv = t >= T.perm ? pin * (1 - pout) : 0;
+  $("perm").style.opacity = pv; $("shade").style.opacity = pv;
+  $("perm").style.transform = `translate(-50%, -50%) scale(${0.94 + 0.06 * pin})`;
+  $("allow").style.background = t > T.allow - 0.05 && t < T.allow + 0.2 ? "#44403c" : "#1c1917";
+  $("send").style.transform = t > T.send - 0.05 && t < T.send + 0.15 ? "scale(0.88)" : "scale(1)";
+
+  // cursor + click ripples
+  const [cx, cy] = cursorPos(t);
+  $("cur").style.left = cx + "px"; $("cur").style.top = cy + "px";
+  let rip = null;
+  for (const c of [[T.send, 1090, 668], [T.allow, 817, 415]]) if (t >= c[0] && t < c[0] + 0.45) rip = c;
+  if (rip) { const r = prog(t, rip[0], 0.45); const sz = 10 + 40 * easeOut(r); Object.assign($("rip").style, { left: rip[1] - sz / 2 + "px", top: rip[2] - sz / 2 + "px", width: sz + "px", height: sz + "px", opacity: 1 - r }); }
+  else $("rip").style.opacity = 0;
+
+  $("f2").style.opacity = 1 - prog(t, 0, 0.5) + prog(t, window.SCENES.chat - 0.5, 0.5);
+}
+
+function renderEnd(t) {
+  show("end");
+  $("e1").style.opacity = easeOut(prog(t, 0.2, 0.6));
+  $("e1").style.transform = `translateY(${(1 - easeOut(prog(t, 0.2, 0.6))) * 20}px)`;
+  $("e2").style.opacity = easeOut(prog(t, 0.5, 0.6));
+  $("term").style.opacity = easeOut(prog(t, 0.8, 0.4));
+  const s = typed(INSTALL, t, 1.1, 48);
+  $("term").innerHTML = `<span class="p">$</span> ${esc(s)}<span class="caret" style="opacity:${Math.floor(t * 2.5) % 2 ? 0 : 1}"></span>`;
+  $("e3").style.opacity = easeOut(prog(t, 3.2, 0.5));
+  $("e4").style.opacity = easeOut(prog(t, 3.6, 0.5));
+  $("e4").style.transform = `scale(${0.85 + 0.15 * back(prog(t, 3.6, 0.5))})`;
+  $("f3").style.opacity = 1 - prog(t, 0, 0.4) + prog(t, window.SCENES.end - 0.5, 0.5);
+}
+
+window.render = (scene, t) => ({ title: renderTitle, chat: renderChat, end: renderEnd })[scene](t);
+</script>
+</body>
+</html>
