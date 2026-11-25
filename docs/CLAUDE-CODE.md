@@ -5,7 +5,7 @@
 **From a local clone** (after `git clone` and `npm install`):
 
 ```bash
-claude mcp add chatgpt --scope user \
+claude mcp add ai-bridge --scope user \
   -e OPENAI_API_KEY=sk-your-key-here \
   -- node /absolute/path/to/chatgpt-mcp-bridge/dist/index.js
 ```
@@ -13,7 +13,7 @@ claude mcp add chatgpt --scope user \
 **Directly from GitHub** (npx downloads and builds it on first run, so the first start is slower):
 
 ```bash
-claude mcp add chatgpt --scope user \
+claude mcp add ai-bridge --scope user \
   -e OPENAI_API_KEY=sk-your-key-here \
   -- npx -y github:myrahossain36-svg/chatgpt-mcp-bridge
 ```
@@ -37,7 +37,7 @@ Commit a `.mcp.json` like [examples/project.mcp.json](../examples/project.mcp.js
 ```json
 {
   "mcpServers": {
-    "chatgpt": {
+    "ai-bridge": {
       "command": "npx",
       "args": ["-y", "github:myrahossain36-svg/chatgpt-mcp-bridge"],
       "env": { "OPENAI_API_KEY": "${OPENAI_API_KEY}" }
@@ -53,18 +53,18 @@ Each developer sets `OPENAI_API_KEY` in their own shell profile.
 If you host the bridge in HTTP mode (see [REMOTE-HTTP.md](REMOTE-HTTP.md)):
 
 ```bash
-claude mcp add --transport http chatgpt https://bridge.example.com/mcp \
+claude mcp add --transport http ai-bridge https://bridge.example.com/mcp \
   --header "Authorization: Bearer YOUR_MCP_AUTH_TOKEN"
 ```
 
 ## Handy prompts in Claude Code
 
 - "Ask chatgpt_code_review to check the diff in `git diff main` for security issues."
-- `/mcp__chatgpt__review_my_code` then paste code: both models review and merge findings.
+- `/mcp__ai-bridge__review_my_code` then paste code: both models review and merge findings.
 - "Before you commit, get ChatGPT's second opinion on your plan."
 
 ## Remove
 
 ```bash
-claude mcp remove chatgpt
+claude mcp remove ai-bridge
 ```

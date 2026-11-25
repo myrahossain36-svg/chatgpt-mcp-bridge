@@ -1,10 +1,11 @@
 {
   "mcpServers": {
-    "chatgpt": {
+    "ai-bridge": {
       "command": "npx",
       "args": ["-y", "github:myrahossain36-svg/chatgpt-mcp-bridge"],
       "env": {
-        "OPENAI_API_KEY": "sk-your-key-here"
+        "OPENAI_API_KEY": "sk-your-openai-key",
+        "GEMINI_API_KEY": "your-gemini-key"
       }
     }
   }

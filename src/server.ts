@@ -40,7 +40,7 @@ export interface ServerDeps {
 
 export function createServer(deps: ServerDeps): McpServer {
   const server = new McpServer(
-    { name: NAME, version: VERSION, title: "ChatGPT Bridge (multi-AI)" },
+    { name: NAME, version: VERSION, title: "Multi-AI Bridge" },
     {
       capabilities: { tools: {}, prompts: {}, resources: {}, logging: {} },
       instructions: SERVER_INSTRUCTIONS,

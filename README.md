@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="docs/assets/demo-v2.gif" alt="Demo: Claude asks ChatGPT for a second opinion, then runs a panel of ChatGPT, Gemini, Grok and DeepSeek and summarises their answers" width="100%">
-  <br><sub>Claude gets a second opinion from ChatGPT, then puts one question to ChatGPT, Gemini, Grok and DeepSeek at once and sums up where they agree. <a href="docs/assets/demo-v2.mp4">Watch the full-quality MP4</a>. (Illustrative session.)</sub>
+  <img src="docs/assets/demo-v3.gif" alt="Demo: Claude consults other AIs through the bridge, then runs a panel of ChatGPT, Gemini, Grok and DeepSeek and summarises their answers" width="100%">
+  <br><sub>Claude gets a second opinion from ChatGPT, then puts one question to ChatGPT, Gemini, Grok and DeepSeek at once and sums up where they agree. <a href="docs/assets/demo-v3.mp4">Watch the full-quality MP4</a>. (Illustrative session.)</sub>
 </p>
 
-<h1 align="center">ChatGPT MCP Bridge</h1>
+<h1 align="center">Multi-AI MCP Bridge</h1>
 
 <p align="center">
-  <b>Give Claude a phone line to ChatGPT, and to every other major AI.</b><br>
+  <b>Give Claude a phone line to every major AI.</b><br>
   ChatGPT, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, Claude itself and local models: ask any of them, run an AI panel, get second opinions and code reviews, compare models side by side and generate images, all without leaving Claude.
 </p>
 
@@ -31,7 +31,7 @@
 ### One-line install for Claude Code
 
 ```bash
-claude mcp add chatgpt --scope user -e OPENAI_API_KEY=sk-your-key -- npx -y github:myrahossain36-svg/chatgpt-mcp-bridge
+claude mcp add ai-bridge --scope user -e OPENAI_API_KEY=sk-... -e GEMINI_API_KEY=... -- npx -y github:myrahossain36-svg/chatgpt-mcp-bridge
 ```
 
 ### Why more than one AI?
@@ -54,7 +54,7 @@ It is an [MCP](https://modelcontextprotocol.io) server, so it works with **Claud
 ```text
                                                       ┌──► ChatGPT (OpenAI)
                                                       ├──► Gemini (Google)
- You ──► Claude ──(MCP)──► ChatGPT MCP Bridge ──(HTTPS)┼──► Grok, DeepSeek, Mistral, Llama ...
+ You ──► Claude ──(MCP)──► Multi-AI MCP Bridge ──(HTTPS)┼──► Grok, DeepSeek, Mistral, Llama ...
             ▲                                         ├──► Claude, Perplexity, Kimi, Qwen ...
             │                                         └──► Ollama / LM Studio (local)
             └──────────────────── answers ◄──────────────────────┘
@@ -119,8 +119,8 @@ Features at a glance:
 You need three things:
 
 1. **Node.js 20 or newer.** Check with `node --version`. If you do not have it, install the LTS version from [nodejs.org](https://nodejs.org).
-2. **An OpenAI API key.** Create one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys). It starts with `sk-`.
-   > A ChatGPT Plus/Pro subscription is **not** the same as API access. The API is billed separately, per use. Add a payment method and, ideally, a monthly limit under [Billing](https://platform.openai.com/settings/organization/billing).
+2. **An API key from at least one AI provider**, for example [OpenAI (ChatGPT)](https://platform.openai.com/api-keys), [Google Gemini](https://aistudio.google.com/apikey), [xAI Grok](https://console.x.ai), [Anthropic Claude](https://platform.claude.com/settings/keys) or [DeepSeek](https://platform.deepseek.com/api_keys). Add as many as you like; [PROVIDERS.md](docs/PROVIDERS.md) lists all 15 and where to get each key. Want something free? [Ollama](https://ollama.com) runs models on your own computer with no key.
+   > A chat subscription (ChatGPT Plus, Gemini Advanced, SuperGrok and so on) is **not** the same as API access. APIs are billed separately, per use. Set a monthly spending limit with each provider.
 3. **Claude Desktop or Claude Code.** Download Claude Desktop from [claude.ai/download](https://claude.ai/download).
 
 ---
@@ -151,17 +151,19 @@ Copy that path. You will paste it in step 3.
 
 > No git? Click the green **Code** button on GitHub, choose **Download ZIP**, unzip it, open a terminal in that folder, and run `npm install`.
 
-### Step 2 (optional but recommended): Test your key
+### Step 2 (optional but recommended): Test your keys
+
+Put in whichever keys you have; this checks each AI answers:
 
 ```bash
 # macOS / Linux
-OPENAI_API_KEY=sk-your-key-here npm run check-key
+OPENAI_API_KEY=sk-... GEMINI_API_KEY=... npm run check-key
 
 # Windows (PowerShell)
-$env:OPENAI_API_KEY="sk-your-key-here"; npm run check-key
+$env:OPENAI_API_KEY="sk-..."; $env:GEMINI_API_KEY="..."; npm run check-key
 ```
 
-You should see `All good. Your key works with the ChatGPT MCP Bridge.` If not, the message tells you what to fix.
+You should see `OK` next to each AI and `All ... provider(s) work with the bridge.` If not, the message tells you what to fix.
 
 ### Step 3: Tell Claude Desktop about the bridge
 
@@ -169,18 +171,21 @@ You should see `All good. Your key works with the ChatGPT MCP Bridge.` If not, t
 2. Open **Settings** → **Developer** → **Edit Config**. This opens `claude_desktop_config.json`:
    - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
    - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-3. Paste the following, replacing the path and the key. If the file already has an `"mcpServers"` section, add the `"chatgpt"` block inside it rather than creating a second section.
+3. Paste the following, replacing the path and the keys (keep the ones you have, delete the rest). If the file already has an `"mcpServers"` section, add the `"ai-bridge"` block inside it rather than creating a second section.
 
 **macOS / Linux**
 
 ```json
 {
   "mcpServers": {
-    "chatgpt": {
+    "ai-bridge": {
       "command": "node",
       "args": ["/Users/YOUR_NAME/chatgpt-mcp-bridge/dist/index.js"],
       "env": {
-        "OPENAI_API_KEY": "sk-your-key-here"
+        "OPENAI_API_KEY": "sk-your-openai-key",
+        "GEMINI_API_KEY": "your-gemini-key",
+        "XAI_API_KEY": "xai-your-grok-key",
+        "ANTHROPIC_API_KEY": "your-claude-key"
       }
     }
   }
@@ -192,11 +197,14 @@ You should see `All good. Your key works with the ChatGPT MCP Bridge.` If not, t
 ```json
 {
   "mcpServers": {
-    "chatgpt": {
+    "ai-bridge": {
       "command": "node",
       "args": ["C:\\Users\\YOUR_NAME\\chatgpt-mcp-bridge\\dist\\index.js"],
       "env": {
-        "OPENAI_API_KEY": "sk-your-key-here"
+        "OPENAI_API_KEY": "sk-your-openai-key",
+        "GEMINI_API_KEY": "your-gemini-key",
+        "XAI_API_KEY": "xai-your-grok-key",
+        "ANTHROPIC_API_KEY": "your-claude-key"
       }
     }
   }
@@ -211,7 +219,7 @@ Quit Claude Desktop **completely** (macOS: `Cmd+Q`; Windows: right-click the tra
 
 ### Step 5: Try it
 
-Start a new chat and click the tools/connectors icon. You should see **chatgpt** with 15 tools. Then type:
+Start a new chat and click the tools/connectors icon. You should see **ai-bridge** with 15 tools. Then type:
 
 > Use chatgpt_server_info to check the ChatGPT bridge, then ask ChatGPT to tell me a fun fact about octopuses.
 
@@ -226,7 +234,7 @@ That is it. More configs (all settings, `npx` version, Windows) are in [`example
 After step 1 above (clone and `npm install`):
 
 ```bash
-claude mcp add chatgpt --scope user \
+claude mcp add ai-bridge --scope user \
   -e OPENAI_API_KEY=sk-your-key-here \
   -- node /absolute/path/to/chatgpt-mcp-bridge/dist/index.js
 ```
@@ -234,12 +242,12 @@ claude mcp add chatgpt --scope user \
 Or skip the clone and run straight from GitHub:
 
 ```bash
-claude mcp add chatgpt --scope user \
+claude mcp add ai-bridge --scope user \
   -e OPENAI_API_KEY=sk-your-key-here \
   -- npx -y github:myrahossain36-svg/chatgpt-mcp-bridge
 ```
 
-Check with `claude mcp list` (or `/mcp` inside Claude Code), then ask: *"Ask ChatGPT to review src/index.ts."*
+Check with `claude mcp list` (or `/mcp` inside Claude Code), then ask: *"Ask Gemini to review src/index.ts"* or *"Run an AI panel on this design."*
 
 To share the setup with a team without committing a key, put [`examples/project.mcp.json`](examples/project.mcp.json) in your project as `.mcp.json`. It reads `OPENAI_API_KEY` from each person's environment.
 
@@ -264,14 +272,14 @@ docker build -t chatgpt-mcp-bridge .
 docker run -d -p 3000:3000 \
   -e OPENAI_API_KEY=sk-your-key-here \
   -e MCP_AUTH_TOKEN=your-long-random-token \
-  -v chatgpt-bridge-data:/data \
+  -v ai-bridge-data:/data \
   chatgpt-mcp-bridge
 curl http://localhost:3000/health
 ```
 
 Then put it behind HTTPS (a host such as Render, Railway or Fly.io, or a tunnel such as Cloudflare Tunnel) and connect:
 
-- **Claude Code:** `claude mcp add --transport http chatgpt https://your-host/mcp --header "Authorization: Bearer YOUR_TOKEN"`
+- **Claude Code:** `claude mcp add --transport http ai-bridge https://your-host/mcp --header "Authorization: Bearer YOUR_TOKEN"`
 - **claude.ai:** Settings → Connectors → *Add custom connector*, URL `https://your-host/mcp?token=YOUR_TOKEN`
 
 Step-by-step hosting instructions, including the security trade-offs of putting a token in the URL: [docs/REMOTE-HTTP.md](docs/REMOTE-HTTP.md).
@@ -306,10 +314,10 @@ Full reference with example calls and outputs: [docs/TOOLS.md](docs/TOOLS.md).
 
 ## Built-in prompts
 
-The bridge ships three MCP prompts that appear in Claude's prompt menu (in Claude Code they appear as slash commands such as `/mcp__chatgpt__cross_check`):
+The bridge ships three MCP prompts that appear in Claude's prompt menu (in Claude Code they appear as slash commands such as `/mcp__ai-bridge__cross_check`):
 
-- **`cross_check`**: Claude answers, ChatGPT reviews, Claude reconciles.
-- **`council`**: Claude and ChatGPT each propose an approach independently, then Claude merges them.
+- **`cross_check`**: Claude answers, another AI reviews, Claude reconciles.
+- **`council`**: Claude and another AI each propose an approach independently, then Claude merges them.
 - **`review_my_code`**: both models review the same code and the findings are merged.
 
 ---
@@ -381,7 +389,7 @@ Details and caveats: [docs/OTHER-PROVIDERS.md](docs/OTHER-PROVIDERS.md).
 
 | Symptom | Fix |
 | --- | --- |
-| No "chatgpt" tools appear in Claude | Check the JSON is valid (paste it into [jsonlint.com](https://jsonlint.com)), the path is absolute and points at `dist/index.js`, then fully quit and reopen Claude. |
+| No "ai-bridge" tools appear in Claude | Check the JSON is valid (paste it into [jsonlint.com](https://jsonlint.com)), the path is absolute and points at `dist/index.js`, then fully quit and reopen Claude. |
 | "Server disconnected" / "failed to start" | Read the log (below). Most often `OPENAI_API_KEY` is missing, or `node` is not on Claude's PATH: use the full path from `which node` (macOS) or `where node` (Windows) as `"command"`. |
 | `HTTP 401` | The key is wrong or revoked. Create a new one and update the config. |
 | `HTTP 429` | Out of credit or rate limited. Check OpenAI billing and limits. |
@@ -391,8 +399,8 @@ Details and caveats: [docs/OTHER-PROVIDERS.md](docs/OTHER-PROVIDERS.md).
 
 **Where are the logs?**
 
-- macOS: `~/Library/Logs/Claude/mcp-server-chatgpt.log`
-- Windows: `%APPDATA%\Claude\logs\mcp-server-chatgpt.log`
+- macOS: `~/Library/Logs/Claude/mcp-server-ai-bridge.log`
+- Windows: `%APPDATA%\Claude\logs\mcp-server-ai-bridge.log`
 
 Set `"LOG_LEVEL": "debug"` in the config for more detail. You can also test the server on its own with the MCP Inspector: `OPENAI_API_KEY=sk-... npm run inspect`.
 
@@ -403,7 +411,7 @@ Full guide: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 ## Security and costs
 
 - **Your key stays local.** In stdio mode the key lives only in your Claude config and is sent only to OpenAI (or your `OPENAI_BASE_URL`). It is redacted from logs and never returned by any tool.
-- **What leaves your machine:** only the text Claude chooses to send in a tool call, which you can see (and approve) in Claude before it runs. ChatGPT cannot see the rest of your Claude conversation.
+- **What leaves your machine:** only the text Claude chooses to send in a tool call, which you can see (and approve) in Claude before it runs. The other AIs cannot see the rest of your Claude conversation.
 - **Costs:** every tool call is a billed OpenAI API request. Set a monthly budget in OpenAI billing, use `ALLOWED_MODELS` to block expensive models, and keep `MAX_OUTPUT_TOKENS` sensible.
 - **HTTP mode:** always set `MCP_AUTH_TOKEN` and use HTTPS when exposing the bridge beyond your own computer. Without a token, anyone who can reach it can spend your credit.
 - **Confidential material:** consider your obligations before sending client, personal or confidential data to any third-party AI service, and check OpenAI's data-usage terms for your account.
@@ -452,13 +460,13 @@ How it fits together: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Contribution
 
 **Is this official?** No. It is an independent open-source project, not made or endorsed by OpenAI, Anthropic, Google, xAI or any other provider. All product names are trademarks of their owners.
 
-**Can it use my ChatGPT Plus subscription instead of an API key?** No. It uses each provider's API, which needs an API key and is billed separately.
+**Can it use my ChatGPT Plus (or other chat) subscription instead of an API key?** No. It uses each provider's API, which needs an API key and is billed separately.
 
 **Which AIs does it support?** 15 providers: ChatGPT, Claude, Gemini, Grok, DeepSeek, Mistral, Llama, Perplexity, Kimi, Qwen, Cohere, Groq, OpenRouter (hundreds of models), Ollama and LM Studio. See [PROVIDERS.md](docs/PROVIDERS.md).
 
 **Can ChatGPT use it to reach Claude?** Yes, by hosting it in HTTP mode. See [USE-FROM-CHATGPT.md](docs/USE-FROM-CHATGPT.md).
 
-**Does ChatGPT see my whole Claude chat?** No. It only sees what Claude sends in each tool call (plus earlier turns of the same `conversation_id`).
+**Do the other AIs see my whole Claude chat?** No. They only see what Claude sends in each tool call (plus earlier turns of the same `conversation_id`).
 
 **Do conversations survive a restart?** Only if you set `CONVERSATION_STORE_PATH`. Otherwise they are kept in memory until the bridge stops.
 

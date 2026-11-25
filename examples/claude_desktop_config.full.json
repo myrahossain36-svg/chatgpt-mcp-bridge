@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "chatgpt": {
+    "ai-bridge": {
       "command": "node",
       "args": ["/absolute/path/to/chatgpt-mcp-bridge/dist/index.js"],
       "env": {

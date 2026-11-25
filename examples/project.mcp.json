@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "chatgpt": {
+    "ai-bridge": {
       "command": "npx",
       "args": ["-y", "github:myrahossain36-svg/chatgpt-mcp-bridge"],
       "env": {

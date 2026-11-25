@@ -8,13 +8,13 @@ Claude Desktop writes each MCP server's stderr to a log file:
 
 | System | Log file |
 | --- | --- |
-| macOS | `~/Library/Logs/Claude/mcp-server-chatgpt.log` |
-| Windows | `%APPDATA%\Claude\logs\mcp-server-chatgpt.log` |
+| macOS | `~/Library/Logs/Claude/mcp-server-ai-bridge.log` |
+| Windows | `%APPDATA%\Claude\logs\mcp-server-ai-bridge.log` |
 
 On macOS you can follow it live:
 
 ```bash
-tail -f ~/Library/Logs/Claude/mcp-server-chatgpt.log
+tail -f ~/Library/Logs/Claude/mcp-server-ai-bridge.log
 ```
 
 Add `"LOG_LEVEL": "debug"` to the `env` block for more detail. Every line from the bridge starts with `[chatgpt-mcp-bridge]`.

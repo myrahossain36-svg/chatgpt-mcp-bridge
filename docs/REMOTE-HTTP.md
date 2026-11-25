@@ -44,7 +44,7 @@ docker build -t chatgpt-mcp-bridge .
 docker run -d --name chatgpt-bridge -p 3000:3000 \
   -e OPENAI_API_KEY=sk-... \
   -e MCP_AUTH_TOKEN=your-token \
-  -v chatgpt-bridge-data:/data \
+  -v ai-bridge-data:/data \
   chatgpt-mcp-bridge
 ```
 
@@ -91,7 +91,7 @@ Availability of custom connectors depends on your Claude plan and, for Team or E
 **Claude Code:**
 
 ```bash
-claude mcp add --transport http chatgpt https://your-host/mcp \
+claude mcp add --transport http ai-bridge https://your-host/mcp \
   --header "Authorization: Bearer YOUR_TOKEN"
 ```
 

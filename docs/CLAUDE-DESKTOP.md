@@ -55,13 +55,13 @@ Add the bridge under `mcpServers`. Ready-made versions:
 
 ### Already have other MCP servers?
 
-Add `chatgpt` alongside them; do not create a second `mcpServers` key:
+Add `ai-bridge` alongside them; do not create a second `mcpServers` key:
 
 ```json
 {
   "mcpServers": {
     "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/me/Documents"] },
-    "chatgpt": {
+    "ai-bridge": {
       "command": "node",
       "args": ["/Users/me/chatgpt-mcp-bridge/dist/index.js"],
       "env": { "OPENAI_API_KEY": "sk-..." }
@@ -85,7 +85,7 @@ where node      # Windows, e.g. C:\Program Files\nodejs\node.exe
 
 ## 5. Restart and test
 
-Quit Claude Desktop fully and reopen it. In a new chat, open the tools menu and check **chatgpt** is listed and enabled. Try:
+Quit Claude Desktop fully and reopen it. In a new chat, open the tools menu and check **ai-bridge** is listed and enabled. Try:
 
 - "Run chatgpt_server_info."
 - "Ask ChatGPT for three names for a bakery."
@@ -103,4 +103,4 @@ Then restart Claude Desktop.
 
 ## Uninstalling
 
-Remove the `chatgpt` block from the config, restart Claude, and delete the folder. Revoke the API key at platform.openai.com if you no longer need it.
+Remove the `ai-bridge` block from the config, restart Claude, and delete the folder. Revoke the API key at platform.openai.com if you no longer need it.

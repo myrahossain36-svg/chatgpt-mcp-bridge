@@ -119,7 +119,7 @@ export function registerInfoTools(server: McpServer, ctx: ToolContext): void {
       const text = Object.entries(info)
         .map(([k, v]) => `${k}: ${v}`)
         .join("\n");
-      return textResult(`ChatGPT MCP Bridge (multi-AI)\n${text}`, info);
+      return textResult(`Multi-AI MCP Bridge\n${text}`, info);
     }),
   );
 }
